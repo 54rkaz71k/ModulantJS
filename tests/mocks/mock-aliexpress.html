@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mock AliExpress Checkout Journey</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .search-container { margin-bottom: 20px; }
+        .product-card { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
+        .product-details, .cart-confirmation, .checkout-form, .order-confirmation { 
+            border: 1px solid #ddd; 
+            padding: 20px; 
+            margin-top: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search products">
+    </div>
+
+    <div id="search-results" style="display: none;">
+        <div class="product-card" onclick="selectProduct()">
+            <h3>Smartphone X</h3>
+            <p>Price: $499.99</p>
+        </div>
+    </div>
+
+    <div id="product-details" class="product-details" style="display: none;">
+        <h2>Smartphone X</h2>
+        <p>Detailed product information</p>
+        <button class="add-to-cart">Add to Cart</button>
+    </div>
+
+    <div id="cart-confirmation" class="cart-confirmation" style="display: none;">
+        <p>Product added to cart</p>
+        <button class="proceed-to-checkout">Proceed to Checkout</button>
+    </div>
+
+    <div id="checkout-form" class="checkout-form" style="display: none;">
+        <h2>Checkout</h2>
+        <form>
+            <input type="text" name="fullName" placeholder="Full Name">
+            <input type="text" name="address" placeholder="Address">
+            <input type="text" name="city" placeholder="City">
+            <button type="button" class="submit-order">Submit Order</button>
+        </form>
+    </div>
+
+    <div id="order-confirmation" class="order-confirmation" style="display: none;">
+        <h2>Order Confirmation</h2>
+        <p>Order ID: <span class="order-id">ORDER-12345</span></p>
+        <p>Total: <span class="order-total">$499.99</span></p>
+    </div>
+
+    <script>
+        document.getElementById('search-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('search-results').style.display = 'block';
+            }
+        });
+
+        function selectProduct() {
+            document.getElementById('product-details').style.display = 'block';
+        }
+
+        document.querySelector('.add-to-cart').addEventListener('click', function() {
+            document.getElementById('cart-confirmation').style.display = 'block';
+        });
+
+        document.querySelector('.proceed-to-checkout').addEventListener('click', function() {
+            document.getElementById('checkout-form').style.display = 'block';
+        });
+
+        document.querySelector('.submit-order').addEventListener('click', function() {
+            document.getElementById('order-confirmation').style.display = 'block';
+        });
+    </script>
+</body>
+</html>

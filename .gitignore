@@ -47,3 +47,5 @@ geckodriver.log
 # Miscellaneous
 .npm
 .eslintcache
+
+*.png

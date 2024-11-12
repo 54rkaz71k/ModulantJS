@@ -8,34 +8,31 @@
     "test": "mocha modulant.spec.js",
     "test:e2e": "mocha modulant.e2e.spec.js",
     "test:chromedriver": "mocha tests/e2e/chromedriver/routing.spec.js",
-    "test:all": "npm run test && npm run test:e2e && npm run test:chromedriver",
+    "test:checkout": "mocha tests/e2e/checkout-journey.spec.js",
+    "test:all": "npm run test && npm run test:e2e && npm run test:chromedriver && npm run test:checkout",
     "start-proxy-server": "node secondary-server.js",
     "dev": "npx http-server .",
     "lint": "eslint .",
     "prepare": "npm run lint && npm test"
   },
   "dependencies": {
+    "express": "^4.17.1",
     "axios": "^0.21.1",
     "cors": "^2.8.5",
-    "express": "^4.17.1"
+    "body-parser": "^1.19.0"
   },
   "devDependencies": {
+    "mocha": "^10.2.0",
     "chai": "^4.3.7",
-    "chromedriver": "^130.0.4",
+    "sinon": "^15.0.3",
     "eslint": "^8.36.0",
     "http-server": "^14.1.1",
     "jsdom": "^21.1.1",
     "jsdom-global": "^3.0.2",
-    "mocha": "^10.2.0",
-    "selenium-webdriver": "^4.26.0",
-    "sinon": "^15.0.3"
+    "selenium-webdriver": "^4.10.0",
+    "chromedriver": "^114.0.2"
   },
-  "keywords": [
-    "proxy",
-    "javascript",
-    "web",
-    "interceptor"
-  ],
+  "keywords": ["proxy", "javascript", "web", "interceptor"],
   "author": "steake",
   "license": "MIT",
   "mocha": {
@@ -58,14 +55,8 @@
     },
     "rules": {
       "no-console": "warn",
-      "indent": [
-        "error",
-        4
-      ],
-      "semi": [
-        "error",
-        "always"
-      ]
+      "indent": ["error", 2],
+      "semi": ["error", "always"]
     }
   }
 }

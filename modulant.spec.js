@@ -14,24 +14,10 @@ const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
 global.window = dom.window;
 global.document = dom.window.document;
 global.navigator = dom.window.navigator;
+global.URL = dom.window.URL;
+global.history = dom.window.history;
 
-// Ensure fetch is defined before other operations
-if (!global.window.fetch) {
-    global.window.fetch = async (url, options) => {
-        return new Promise((resolve) => {
-            resolve({
-                ok: true,
-                status: 200,
-                json: async () => ({}),
-                text: async () => 'Default Mocked Response',
-                headers: new global.window.Headers(),
-                clone: () => this
-            });
-        });
-    };
-}
-
-// Comprehensive Headers implementation
+// Comprehensive Response and Headers implementation
 global.window.Headers = class Headers {
     constructor(init = {}) {
         this._headers = init || {};
@@ -44,37 +30,31 @@ global.window.Headers = class Headers {
     }
 };
 
-// Comprehensive Response implementation
 global.window.Response = class Response {
     constructor(body, init = {}) {
-        this._body = body;
+        this.body = body;
         this.status = init.status || 200;
         this.ok = true;
         this.headers = new global.window.Headers(init.headers);
         
-        this.text = async () => this._body;
+        this.text = async () => body;
         this.json = async () => {
             try {
-                return JSON.parse(this._body);
+                return JSON.parse(body);
             } catch {
-                return this._body;
+                return body;
             }
         };
         this.clone = () => this;
-
-        // Add body getter to match fetch API
-        Object.defineProperty(this, 'body', {
-            get: () => {
-                const stream = new global.window.ReadableStream({
-                    start(controller) {
-                        controller.enqueue(new TextEncoder().encode(this._body));
-                        controller.close();
-                    }
-                });
-                return stream;
-            }
-        });
     }
+};
+
+// Ensure fetch is defined with comprehensive mock
+global.window.fetch = async (url, options = {}) => {
+    return new global.window.Response('Mocked response', { 
+        status: 200,
+        headers: new global.window.Headers()
+    });
 };
 
 // Load Modulant source code
@@ -116,125 +96,108 @@ describe('Modulant.js Proxy Tool', function() {
 
     let modulant;
     let fetchStub;
-    let postMessageStub;
+    let windowOpenStub;
+    let pushStateStub;
     let originalFetch;
+    let originalWindowOpen;
+    let originalPushState;
+
+    const testRoutes = [
+        {
+            match: {
+                hostname: 'example.com',
+                path: '/api/*'
+            },
+            proxy: {
+                target: 'https://secondary.com',
+                pathRewrite: '/proxy$1'
+            }
+        }
+    ];
 
     beforeEach(function() {
-        // Store original fetch
+        // Store original methods
         originalFetch = global.window.fetch;
+        originalWindowOpen = global.window.open;
+        originalPushState = global.history.pushState;
 
-        // Create stubs with more comprehensive implementation
+        // Create stubs
         fetchStub = sinon.stub(global.window, 'fetch').callsFake(async (url, options) => {
             return new global.window.Response('Mocked response', { 
                 status: 200,
                 headers: new global.window.Headers()
             });
         });
-        
-        // Create Modulant instance with test configuration
-        modulant = new Modulant({
-            primaryServerURL: 'https://example.com',
-            secondaryServerURL: 'https://secondary.com',
-            routes: [
-                { pattern: '/api/test', target: 'secondary' }
-            ],
-            logging: false,
-            injectScript: '' // Explicitly set empty inject script
+
+        windowOpenStub = sinon.stub(global.window, 'open').callsFake((url, target, features) => {
+            return url;
         });
 
-        // Stub postMessage on the iframe
-        postMessageStub = sinon.stub(modulant.iframe.contentWindow, 'postMessage');
+        pushStateStub = sinon.stub(global.history, 'pushState').callsFake((state, title, url) => {
+            return url;
+        });
+        
+        // Initialize Modulant with test routes
+        modulant = Modulant.initialize({ routes: testRoutes });
     });
 
     afterEach(function() {
-        // Restore all stubs
+        // Restore all stubs and original methods
         sinon.restore();
-
-        // Restore original fetch
         global.window.fetch = originalFetch;
+        global.window.open = originalWindowOpen;
+        global.history.pushState = originalPushState;
     });
 
     describe('Fetch Interception', function() {
         it('should intercept and route fetch requests', async function() {
-            const testURL = 'https://example.com/api/test';
-            const mockResponseText = 'Mocked response';
+            const testURL = 'https://example.com/api/test-endpoint';
             
             // Perform fetch
-            const fetchPromise = global.window.fetch(testURL);
+            await global.window.fetch(testURL);
 
-            // Verify postMessage was called with the fetch request
-            expect(postMessageStub.calledOnce).to.be.true;
-            const postMessageArgs = postMessageStub.firstCall.args[0];
-            
-            // Verify postMessage details
-            expect(postMessageArgs.type).to.equal('fetch');
-            expect(postMessageArgs.url).to.equal(testURL);
-            expect(postMessageArgs.headers['X-Modulant-Target']).to.equal('https://secondary.com');
-
-            // Verify original fetch was not called
-            expect(fetchStub.called).to.be.false;
-
-            // Simulate the response handling
-            const requestId = postMessageArgs.requestId;
-            modulant.handleFetchResponse({ 
-                response: mockResponseText,
-                url: testURL,
-                requestId: requestId
-            });
-
-            // Wait for the fetch promise
-            const response = await fetchPromise;
-
-            // Verify response text
-            const responseText = await response.text();
-            expect(responseText).to.equal(mockResponseText);
+            // Verify fetch was intercepted and routed
+            const lastCall = fetchStub.lastCall;
+            expect(lastCall.args[0]).to.include('https://secondary.com/proxy/test-endpoint');
         });
     });
 
-    describe('Content Injection', function() {
-        it('should support custom content injection', function() {
-            const mockResponse = { 
-                response: '<div>Test Content</div>',
-                requestId: 'test-request-id'
-            };
+    describe('Window Open Interception', function() {
+        it('should intercept and route window.open calls', function() {
+            const testURL = 'https://example.com/api/new-page';
             
-            // Create a mock content container
-            const contentContainer = global.document.createElement('div');
-            contentContainer.id = 'content';
-            global.document.body.appendChild(contentContainer);
+            // Perform window.open
+            global.window.open(testURL);
 
-            // Call handleFetchResponse
-            modulant.handleFetchResponse(mockResponse);
+            // Verify window.open was intercepted and routed
+            const lastCall = windowOpenStub.lastCall;
+            expect(lastCall.args[0]).to.include('https://secondary.com/proxy/new-page');
+        });
+    });
 
-            // Check content injection
-            expect(contentContainer.innerHTML).to.equal(mockResponse.response);
+    describe('History Navigation Interception', function() {
+        it('should intercept and route history.pushState', function() {
+            const testURL = 'https://example.com/api/new-state';
+            
+            // Perform pushState
+            global.history.pushState(null, '', testURL);
+
+            // Verify pushState was intercepted and routed
+            const lastCall = pushStateStub.lastCall;
+            expect(lastCall.args[2]).to.include('https://secondary.com/proxy/new-state');
         });
     });
 
     describe('Error Handling', function() {
-        it('should handle fetch errors gracefully', function() {
-            const mockError = new Error('Test Error');
-            const requestId = 'test-request-id';
-
-            // Create a mock pending fetch
-            const rejectSpy = sinon.spy();
-            modulant.pendingFetches.set(requestId, { 
-                resolve: () => {}, 
-                reject: rejectSpy 
-            });
-
-            // Simulate fetch error
-            modulant.handleFetchError({ 
-                error: mockError.message,
-                requestId: requestId 
-            });
-
-            expect(rejectSpy.calledOnce).to.be.true;
-            expect(rejectSpy.firstCall.args[0]).to.be.instanceOf(Error);
-            expect(rejectSpy.firstCall.args[0].message).to.equal(mockError.message);
+        it('should handle routing errors gracefully', async function() {
+            const testURL = 'https://unmatched.com/api/test';
             
-            // Verify the pending fetch was removed
-            expect(modulant.pendingFetches.has(requestId)).to.be.false;
+            // Perform fetch to unmatched route
+            await global.window.fetch(testURL);
+
+            // Verify original URL was used
+            const lastCall = fetchStub.lastCall;
+            expect(lastCall.args[0]).to.equal(testURL);
         });
     });
 });

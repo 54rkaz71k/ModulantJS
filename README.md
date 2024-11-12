@@ -1,4 +1,7 @@
-# ModulantJS
+# Modulant JS
+
+## Overview
+Modulant is a distributed client-side proxy tool designed to intercept and route web requests dynamically.
 
 ## Distributed Client-Side Proxy Tool
 
@@ -11,6 +14,44 @@ Modulant.js is a powerful JavaScript library that provides a distributed proxy m
 - 🛡️ Secure Communication: Uses `postMessage` for inter-frame communication
 - 🔀 Dynamic Routing: Configure primary and secondary server routing
 - 📦 Lightweight and Easy to Use
+
+## Project Structure
+```
+modulant/
+│
+├── config/
+│   └── modulant-routing.js      # Routing configuration
+│
+├── tests/
+│   ├── e2e/
+│   │   └── chromedriver/
+│   │       ├── routing.spec.js  # ChromeDriver E2E test specifications
+│   │       └── helpers/
+│   │           └── setup.js     # Test setup and utility functions
+│   │
+│   └── mocks/
+│       └── local-server.js      # Mock local server for testing
+│
+├── modulant.js                  # Core Modulant library
+├── modulant.spec.js             # Unit tests
+├── modulant.e2e.spec.js         # Existing E2E tests
+└── package.json                 # Project dependencies and scripts
+```
+
+## Testing
+
+### Available Test Scripts
+- `npm test`: Run unit tests
+- `npm run test:e2e`: Run existing E2E tests
+- `npm run test:chromedriver`: Run ChromeDriver routing tests
+- `npm run test:all`: Run all tests (unit, E2E, and ChromeDriver)
+
+### ChromeDriver Tests
+The ChromeDriver tests demonstrate Modulant's routing capabilities:
+- Conditional routing between different servers
+- API-level request interception
+- Proxy configuration with Selenium WebDriver
+
 
 ## Testing
 
@@ -52,7 +93,10 @@ const modulant = Modulant.init({
 });
 ```
 ### Testing
-
+### Test Scenarios
+- Routing specific API paths to a local server
+- Defaulting other requests to a primary server (AliExpress)
+- Demonstrating dynamic request rerouting
 
 ```bash
 npm test

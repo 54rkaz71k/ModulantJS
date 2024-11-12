@@ -1,0 +1,59 @@
+{
+  "name": "modulant-js",
+  "version": "1.0.0",
+  "description": "Distributed client-side proxy tool",
+  "main": "modulant.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "mocha modulant.spec.js",
+    "test:e2e": "mocha modulant.e2e.spec.js",
+    "test:all": "npm run test && npm run test:e2e",
+    "start-proxy-server": "node secondary-server.js",
+    "dev": "npx http-server .",
+    "lint": "eslint .",
+    "prepare": "npm run lint && npm test"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "axios": "^0.21.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "chai": "^4.3.7",
+    "sinon": "^15.0.3",
+    "eslint": "^8.36.0",
+    "http-server": "^14.1.1",
+    "jsdom": "^21.1.1",
+    "jsdom-global": "^3.0.2",
+    "selenium-webdriver": "^4.10.0",
+    "chromedriver": "^114.0.2"
+  },
+  "keywords": ["proxy", "javascript", "web", "interceptor"],
+  "author": "steake",
+  "license": "MIT",
+  "mocha": {
+    "require": [
+      "jsdom-global/register"
+    ],
+    "spec": "modulant.spec.js"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2021": true,
+      "mocha": true,
+      "node": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+      "ecmaVersion": 2021,
+      "sourceType": "script"
+    },
+    "rules": {
+      "no-console": "warn",
+      "indent": ["error", 4],
+      "semi": ["error", "always"]
+    }
+  }
+}

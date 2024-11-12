@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modulant.js Proxy Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #content { border: 1px solid #ccc; padding: 20px; margin-top: 20px; }
+        .links { display: flex; gap: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Modulant.js Proxy Demo</h1>
+    
+    <div class="links">
+        <a href="https://example.com">Example Link 1</a>
+        <a href="https://example.org">Example Link 2</a>
+        <button id="ajaxButton">Fetch Data</button>
+    </div>
+
+    <div id="content">
+        Content will be loaded here dynamically
+    </div>
+
+    <script src="modulant.js"></script>
+    <script>
+        // Initialize Modulant with custom configuration
+        const modulant = Modulant.init({
+            primaryServerURL: 'https://example.com',
+            secondaryServerURL: 'https://example.org',
+            routes: [
+                { pattern: '/api', target: 'secondary' }
+            ],
+            defaultHeaders: {
+                'X-Modulant-Proxy': 'true'
+            },
+            injectScript: `
+                <script>
+                    console.log('Dynamic content intercepted by Modulant.js');
+                <\/script>
+            `
+        });
+
+        // Example AJAX button to demonstrate fetch interception
+        document.getElementById('ajaxButton').addEventListener('click', async () => {
+            try {
+                const response = await fetch('https://example.com/api/data');
+                const data = await response.text();
+                document.getElementById('content').innerHTML = data;
+            } catch (error) {
+                console.error('Fetch error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

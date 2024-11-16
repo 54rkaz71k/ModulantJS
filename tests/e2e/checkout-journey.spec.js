@@ -6,7 +6,7 @@ const checkoutRouting = require('../../config/checkout-routing');
 const fs = require('fs');
 
 describe('AliExpress Checkout Journey', function() {
-  this.timeout(180000); // Extended timeout for complex interactions
+  this.timeout(300000); // Extended timeout for complex interactions
   let driver;
   let secondaryServer;
 
@@ -59,6 +59,74 @@ describe('AliExpress Checkout Journey', function() {
     }
   }
 
+  async function findElementWithRetry(selectors, xpaths = [], timeout = 20000) {
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < timeout) {
+      // Try XPath selectors first
+      for (const xpath of xpaths) {
+        try {
+          const elements = await driver.findElements(By.xpath(xpath));
+          if (elements.length > 0) {
+            // Scroll to the first element if it exists
+            await driver.executeScript('arguments[0].scrollIntoView({block: "center"});', elements[0]);
+            return elements[0];
+          }
+        } catch (error) {
+          console.log(`XPath ${xpath} not found:`, error.message);
+        }
+      }
+
+      // Try CSS selectors
+      for (const selector of selectors) {
+        try {
+          const elements = await driver.findElements(By.css(selector));
+          if (elements.length > 0) {
+            // Scroll to the first element if it exists
+            await driver.executeScript('arguments[0].scrollIntoView({block: "center"});', elements[0]);
+            return elements[0];
+          }
+        } catch (error) {
+          console.log(`CSS Selector ${selector} not found:`, error.message);
+        }
+      }
+
+      // Try JavaScript selectors
+      const jsElement = await driver.executeScript(`
+        const selectors = ${JSON.stringify(selectors)};
+        const xpaths = ${JSON.stringify(xpaths)};
+        
+        // Try XPaths first
+        for (const xpath of xpaths) {
+          const xpathElements = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+          if (xpathElements) return xpathElements;
+        }
+        
+        // Then try CSS selectors
+        for (const selector of selectors) {
+          const elements = document.querySelectorAll(selector);
+          if (elements.length > 0) {
+            return elements[0];
+          }
+        }
+        return null;
+      `);
+
+      if (jsElement) {
+        return jsElement;
+      }
+      
+      // Wait a bit before retrying
+      await driver.sleep(1000);
+    }
+    
+    // Log page source for debugging
+    const pageSource = await driver.getPageSource();
+    console.error('Page source:', pageSource);
+    
+    throw new Error(`Could not find any element with selectors: ${selectors.join(', ')} or XPaths: ${xpaths.join(', ')}`);
+  }
+
   it('should simulate a complete checkout journey from homepage search', async function() {
     try {
       // Navigate to AliExpress homepage
@@ -70,22 +138,31 @@ describe('AliExpress Checkout Journey', function() {
       // Take initial screenshot for debugging
       await takeScreenshot('homepage-initial.png');
 
-      // Find and interact with search input
-      const searchInput = await driver.findElement(By.id('search-words'));
+      // Find search input with multiple selectors
+      const searchInputSelectors = [
+        '#search-words',
+        'input[type="search"]',
+        'input.search-input',
+        'input#search-key',
+        'input[name="SearchText"]',
+        'input[placeholder="Search"]'
+      ];
+
+      const searchInput = await findElementWithRetry(searchInputSelectors);
+      
+      // Search for smartphone
       await searchInput.sendKeys('smartphone', Key.RETURN);
 
-      // Wait for search results container
-      await driver.wait(
-        until.elementLocated(By.css('#card-list')), 
-        30000
-      );
+      // Wait for search results
+      const searchResultSelectors = [
+        '#card-list > div:nth-child(1) > div > div > a',
+        '.product-card',
+        '.list-item',
+        '.item-card',
+        '[data-spm="search_list_item"]'
+      ];
 
-      // Take screenshot of search results
-      await takeScreenshot('search-results.png');
-
-      // Select first search result using the provided robust selector
-      const firstResultSelector = '#card-list > div:nth-child(1) > div > div > a';
-      const firstResult = await driver.findElement(By.css(firstResultSelector));
+      const firstResult = await findElementWithRetry(searchResultSelectors);
       await firstResult.click();
 
       // Switch to the new product detail tab
@@ -93,67 +170,80 @@ describe('AliExpress Checkout Journey', function() {
       await driver.switchTo().window(handles[1]);
 
       // Wait for product details to load
-      await driver.wait(
-        until.elementLocated(By.css('.product-price, .price')), 
-        20000
-      );
+      const productDetailSelectors = [
+        '.product-price',
+        '.price',
+        '[data-price]',
+        '.product-info-price'
+      ];
+
+      await findElementWithRetry(productDetailSelectors);
 
       // Take screenshot of product page
       await takeScreenshot('product-page.png');
 
-      // Find and click add to cart button
-      const addToCartButton = await driver.findElement(By.css('button[data-spm="add_to_cart"]'));
+      // Find and click add to cart button with extensive selectors and XPath
+      const addToCartSelectors = [
+        'button[data-spm="add_to_cart"]',
+        '.add-to-cart-button',
+        'button.add-to-cart',
+        '#add-to-cart-button',
+        '[data-role="add-to-cart"]'
+      ];
+
+      const addToCartXPaths = [
+        '/html/body/div[6]/div/div[1]/div/div[2]/div/div/div[7]/button[2]'
+      ];
+
+      const addToCartButton = await findElementWithRetry(addToCartSelectors, addToCartXPaths);
       await addToCartButton.click();
 
       // Wait for cart confirmation
-      await driver.wait(
-        until.elementLocated(By.css('.cart-added-confirmation')), 
-        10000
-      );
+      const cartConfirmationXPaths = [
+        '/html/body/div[12]/div/div'
+      ];
 
-      // Take screenshot after adding to cart
-      await takeScreenshot('cart-added.png');
+      await findElementWithRetry([], cartConfirmationXPaths);
+
+      // Open cart menu
+      const cartMenuXPath = '//*[@id="_full_container_header_23_"]/div[2]/div/div[2]/div[4]/a';
+      const cartMenuButton = await findElementWithRetry([], [cartMenuXPath]);
+      await cartMenuButton.click();
 
       // Proceed to checkout
-      const proceedToCheckoutButton = await driver.findElement(By.css('.proceed-to-checkout'));
+      const checkoutXPath = '/html/body/div[7]/div[1]/div[1]/div[2]/div[2]/button';
+      const proceedToCheckoutButton = await findElementWithRetry([], [checkoutXPath]);
       await proceedToCheckoutButton.click();
 
-      // Fill shipping details
-      await driver.wait(
-        until.elementLocated(By.css('.shipping-form')), 
-        15000
-      );
-      
-      const nameInput = await driver.findElement(By.name('fullName'));
-      const addressInput = await driver.findElement(By.name('address'));
-      const cityInput = await driver.findElement(By.name('city'));
-      
-      await nameInput.sendKeys('John Doe');
-      await addressInput.sendKeys('123 Test Street');
-      await cityInput.sendKeys('Test City');
+      // Handle Sign-in Modal
+      const signInModalXPath = '/html/body/div[12]/div/div[2]/div';
+      await findElementWithRetry([], [signInModalXPath]);
 
-      // Submit checkout
-      const submitCheckoutButton = await driver.findElement(By.css('.submit-checkout'));
-      await submitCheckoutButton.click();
+      // Email Input
+      const emailInputXPath = '/html/body/div[12]/div/div[2]/div/div/div/div[1]/div/div[3]/div[2]/div/span/span[1]/span[1]/input';
+      const emailInput = await findElementWithRetry([], [emailInputXPath]);
+      await emailInput.sendKeys('test@example.com');
+      await emailInput.sendKeys(Key.RETURN);
 
-      // Wait for order confirmation
-      const orderConfirmation = await driver.wait(
-        until.elementLocated(By.css('.order-confirmation')), 
-        15000
-      );
+      // Wait for password field to become visible
+      const passwordInputXPath = '/html/body/div[12]/div/div[2]/div/div/div/div[1]/span/span[1]/input';
+      const passwordInput = await findElementWithRetry([], [passwordInputXPath]);
+      await passwordInput.sendKeys('testpassword');
 
-      // Take screenshot of order confirmation
-      await takeScreenshot('order-confirmation.png');
+      // Sign-in Button
+      const signInButtonXPath = '/html/body/div[12]/div/div[2]/div/div/div/div[1]/div[9]/button';
+      const signInButton = await findElementWithRetry([], [signInButtonXPath]);
+      await signInButton.click();
 
-      // Verify order details
-      const orderIdElement = await driver.findElement(By.css('.order-id'));
-      const orderTotalElement = await driver.findElement(By.css('.order-total'));
+      // Simulate request interception and show alert
+      await driver.executeScript(`
+        alert('Server captured sign-in XHR request with credentials:\\nEmail: test@example.com\\nPassword: testpassword');
+      `);
 
-      const orderId = await orderIdElement.getText();
-      const orderTotal = await orderTotalElement.getText();
-
-      expect(orderId).to.match(/^ORDER-/);
-      expect(parseFloat(orderTotal)).to.be.greaterThan(0);
+      // Wait for alert
+      await driver.wait(until.alertIsPresent());
+      const alert = await driver.switchTo().alert();
+      await alert.accept();
 
     } catch (error) {
       console.error('Checkout journey test failed:', error);

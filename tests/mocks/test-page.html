@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modulant Test Page</title>
+</head>
+<body>
+    <h1>Modulant Test Page</h1>
+    <a href="/api/test" id="api-link">API Test Link</a>
+    <a href="/non-api/test" id="non-api-link">Non-API Test Link</a>
+    <button id="fetch-button">Fetch API Test</button>
+    <button id="xhr-button">XHR API Test</button>
+    <button id="window-open-button">Window Open Test</button>
+    <div id="result"></div>
+
+    <script src="/src/modulant.js"></script>
+    <script>
+        console.log('Starting Modulant initialization...');
+        try {
+            const modulant = new Modulant({
+                primaryServerURL: 'http://localhost:3000',
+                secondaryServerURL: 'http://localhost:4000',
+                routes: [
+                    { 
+                        match: { 
+                            hostname: 'localhost', 
+                            path: '/api/*' 
+                        }, 
+                        proxy: { 
+                            target: 'http://localhost:4000' 
+                        } 
+                    }
+                ],
+                injectScript: `
+                    window.addEventListener('message', (event) => {
+                        if (event.data === 'test-custom-event') {
+                            window.parent.postMessage('custom-event-fired', '*');
+                        }
+                    });
+                `
+            });
+            console.log('Modulant initialized successfully:', modulant);
+            window.modulant = modulant;
+        } catch (error) {
+            console.error('Error initializing Modulant:', error);
+        }
+
+        document.getElementById('fetch-button').addEventListener('click', async () => {
+            console.log('Fetch button clicked');
+            try {
+                const response = await fetch('/api/test');
+                const text = await response.text();
+                console.log('Fetch response:', text);
+                document.getElementById('result').textContent = `Fetch result: ${text}`;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                document.getElementById('result').textContent = `Fetch error: ${error.message}`;
+            }
+        });
+
+        document.getElementById('xhr-button').addEventListener('click', () => {
+            console.log('XHR button clicked');
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/test');
+            xhr.onload = () => {
+                console.log('XHR response:', xhr.responseText);
+                document.getElementById('result').textContent = `XHR result: ${xhr.responseText}`;
+            };
+            xhr.onerror = () => {
+                console.error('XHR error:', xhr.status);
+                document.getElementById('result').textContent = `XHR error: ${xhr.status}`;
+            };
+            xhr.send();
+        });
+
+        document.getElementById('window-open-button').addEventListener('click', () => {
+            console.log('Window open button clicked');
+            window.open('/api/test', '_blank');
+        });
+    </script>
+</body>
+</html>

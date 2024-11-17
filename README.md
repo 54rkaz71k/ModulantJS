@@ -32,7 +32,7 @@ modulant/
 │   └── mocks/
 │       └── local-server.js      # Mock local server for testing
 │
-├── modulant.js                  # Core Modulant library
+├── src/modulant.js                  # Core Modulant library
 ├── modulant.spec.js             # Unit tests
 ├── modulant.e2e.spec.js         # Existing E2E tests
 └── package.json                 # Project dependencies and scripts

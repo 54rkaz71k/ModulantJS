@@ -19,66 +19,39 @@ Modulant.js is a powerful JavaScript library that provides a distributed proxy m
 ```
 modulant/
 │
+├── src/
+│   └── modulant.js            # Core Modulant library
+│
 ├── config/
-│   └── modulant-routing.js      # Routing configuration
+│   ├── global-setup.js        # Test setup configuration
+│   ├── global-teardown.js     # Test cleanup configuration
+│   └── playwright.config.js   # Playwright test configuration
 │
 ├── tests/
-│   ├── e2e/
-│   │   └── chromedriver/
-│   │       ├── routing.spec.js  # ChromeDriver E2E test specifications
-│   │       └── helpers/
-│   │           └── setup.js     # Test setup and utility functions
-│   │
+│   ├── modulant.spec.js       # Unit tests
+│   ├── playwright/
+│   │   └── modulant.playwright.spec.js  # Integration tests
 │   └── mocks/
-│       └── local-server.js      # Mock local server for testing
+│       ├── test-server.js     # Mock server for testing
+│       └── test-page.html     # Test page for integration tests
 │
-├── src/modulant.js                  # Core Modulant library
-├── modulant.spec.js             # Unit tests
-├── modulant.e2e.spec.js         # Existing E2E tests
-└── package.json                 # Project dependencies and scripts
+└── example_routing/
+    ├── checkout-routing.js    # Example checkout flow routing
+    └── modulant-routing.js    # Example general routing
 ```
 
-## Testing
-
-### Available Test Scripts
-- `npm test`: Run unit tests
-- `npm run test:e2e`: Run existing E2E tests
-- `npm run test:chromedriver`: Run ChromeDriver routing tests
-- `npm run test:all`: Run all tests (unit, E2E, and ChromeDriver)
-
-### ChromeDriver Tests
-The ChromeDriver tests demonstrate Modulant's routing capabilities:
-- Conditional routing between different servers
-- API-level request interception
-- Proxy configuration with Selenium WebDriver
-
-
-## Testing
-
-This project supports two types of testing:
-1. Unit/Integration Tests (using JSdom)
-2. End-to-End (E2E) Tests (using ChromeDriver)
-
-### Prerequisites
-
-- Chrome browser installed
-- Node.js and npm
-
-### Running Tests
-
-#### Unit/Integration Tests
-
-### Installation
+## Installation
 ```bash
 # Clone the repository
-git clone https://github.com/54rkaz71k/Modulant.js.git
+git clone https://github.com/54rkaz71k/ModulantJS.git
 
-# No additional dependencies required
+# Install dependencies
+npm install
 ```
 
-### Usage
+## Usage
 
-#### Basic Initialization
+### Basic Initialization
 
 ```javascript
 const modulant = Modulant.init({
@@ -92,41 +65,8 @@ const modulant = Modulant.init({
     }
 });
 ```
-### Testing
-### Test Scenarios
-- Routing specific API paths to a local server
-- Defaulting other requests to a primary server (AliExpress)
-- Demonstrating dynamic request rerouting
 
-```bash
-npm test
-```
-
-#### E2E Tests
-```bash
-npm run test:e2e
-```
-
-#### Run All Tests
-```bash
-npm run test:all
-```
-
-### Dependencies
-
-- JSdom (for unit/integration tests)
-- Selenium WebDriver
-- ChromeDriver (for E2E tests)
-- Mocha
-- Chai
-
-### Test Configuration
-
-- `modulant.spec.js`: Contains unit and integration tests using JSdom
-- `modulant.e2e.spec.js`: Contains end-to-end tests using ChromeDriver
-
-
-#### Configuration Options
+### Configuration Options
 
 - `primaryServerURL`: Default server for most requests
 - `secondaryServerURL`: Alternate server for specific routes
@@ -134,20 +74,64 @@ npm run test:all
 - `defaultHeaders`: Headers to be added to all requests
 - `injectScript`: Custom script to inject into dynamically loaded content
 
-### How It Works
+## Testing
+
+The project uses a comprehensive testing approach with both unit tests and integration tests:
+
+### Available Test Scripts
+- `npm test`: Run unit tests
+- `npm run test:playwright`: Run integration tests (minimal output)
+- `npm run test:playwright:console`: Run integration tests with detailed logs
+- `npm run test:playwright:debug`: Run integration tests in debug mode
+- `npm run test:all`: Run all tests (unit and integration)
+
+### Test Infrastructure
+
+#### Unit Tests
+- Located in `tests/modulant.spec.js`
+- Uses Mocha and Chai for assertions
+- Tests core functionality in isolation
+
+#### Integration Tests
+- Located in `tests/playwright/`
+- Uses Playwright for browser automation
+- Tests end-to-end functionality
+- Includes custom script injection tests
+- Verifies routing and interception
+
+### Running Tests
+
+```bash
+# Run all tests
+npm run test:all
+
+# Run unit tests only
+npm test
+
+# Run integration tests
+npm run test:playwright
+
+# Run integration tests with detailed logs
+npm run test:playwright:console
+
+# Run integration tests in debug mode
+npm run test:playwright:debug
+```
+
+## How It Works
 
 1. Creates a hidden iframe for proxying requests
 2. Intercepts all link clicks and AJAX requests
 3. Routes requests through the iframe based on configuration
 4. Dynamically injects content and maintains request interception
 
-### Security
+## Security
 
 - Uses `sandbox` attributes to restrict iframe capabilities
 - Validates `postMessage` origins
 - Provides flexible routing and header configuration
 
-### Contributing
+## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -155,12 +139,12 @@ npm run test:all
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-### License
+## License
 
 Distributed under the MIT License.
 
-### Contact
+## Contact
 
-Your Name - [@54rkaz71k](https://github.com/54rkaz71k)
+GitHub: [@54rkaz71k](https://github.com/54rkaz71k)
 
-Project Link: [https://github.com/54rkaz71k/Modulant.js](https://github.com/54rkaz71k/Modulant.js)
+Project Link: [https://github.com/54rkaz71k/ModulantJS](https://github.com/54rkaz71k/ModulantJS)

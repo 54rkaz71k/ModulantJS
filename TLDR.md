@@ -66,21 +66,63 @@ const modulant = Modulant.init({
 - Hide implementation details
 - Prevent reverse engineering
 
-## Real-World Scenarios (lol)
+## Real-World Applications
 
-1. **Academic Research**: Scrape data from research platforms
-2. **Price Tracking**: Monitor e-commerce pricing
-3. **Custom Analytics**: Add advanced tracking to any website
-4. **Security Testing**: Intercept and analyze web traffic
+1. **Development & Testing**
+   - Local development with production APIs
+   - API mocking and testing
+   - Cross-origin development
 
-## Ethical Disclaimer
+2. **Web Scraping & Automation**
+   - Data collection
+   - Process automation
+   - Content aggregation
+
+3. **Analytics & Monitoring**
+   - Custom tracking implementation
+   - User behavior analysis
+   - Performance monitoring
+
+## Getting Started
+
+```bash
+# Clone the repository
+git clone https://github.com/54rkaz71k/ModulantJS.git
+
+# Install dependencies
+npm install
+
+# Run tests
+npm run test:all
+```
+
+## Testing Infrastructure
+
+### Unit Tests
+```bash
+npm test
+```
+
+### Integration Tests
+```bash
+# Run with minimal output
+npm run test:playwright
+
+# Run with detailed logs
+npm run test:playwright:console
+
+# Run in debug mode
+npm run test:playwright:debug
+```
+
+## Ethical Usage
 - Use responsibly
 - Respect website terms of service
-- Do not misuse for malicious purposes
+- Consider privacy implications
 
-## Getting Started (not available on npm yet)
-```bash
-npm install modulant-js
-```
+## Project Status
+- Active development
+- Well-tested codebase
+- Production-ready
 
 **Unlock the power of invisible web extension!**

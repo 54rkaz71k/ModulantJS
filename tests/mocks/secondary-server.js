@@ -29,13 +29,26 @@ class SecondaryServer {
     this.app = express();
     this.port = null;
     this.server = null;
+    this.requestLog = [];
     
     // Middleware
     this.app.use(cors());
     this.app.use(bodyParser.json());
+    this.app.use(this.logRequests.bind(this));
 
     // Checkout-related routes
     this.setupRoutes();
+  }
+
+  logRequests(req, res, next) {
+    this.requestLog.push({
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+      body: req.body,
+      timestamp: new Date()
+    });
+    next();
   }
 
   setupRoutes() {
@@ -84,15 +97,52 @@ class SecondaryServer {
         ]
       });
     });
+
+    // New route: Mock product search
+    this.app.get('/api/search', (req, res) => {
+      const query = req.query.q || '';
+      res.json({
+        results: [
+          { id: '1', name: `${query} Product 1`, price: 19.99 },
+          { id: '2', name: `${query} Product 2`, price: 29.99 },
+          { id: '3', name: `${query} Product 3`, price: 39.99 },
+        ],
+        totalResults: 3
+      });
+    });
+
+    // New route: Mock user authentication
+    this.app.post('/api/auth/login', (req, res) => {
+      const { username, password } = req.body;
+      if (username === 'testuser' && password === 'testpass') {
+        res.json({ status: 'success', token: 'mock-jwt-token' });
+      } else {
+        res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+      }
+    });
+
+    // New route: Mock product recommendations
+    this.app.get('/api/recommendations', (req, res) => {
+      res.json({
+        recommendations: [
+          { id: '4', name: 'Recommended Product 1', price: 49.99 },
+          { id: '5', name: 'Recommended Product 2', price: 59.99 },
+        ]
+      });
+    });
   }
 
-  async start() {
+  async start(delay = 0) {
     // Find an available port
     this.port = await findAvailablePort();
 
     return new Promise((resolve, reject) => {
       this.server = this.app.listen(this.port, () => {
         console.log(`Secondary server running on http://localhost:${this.port}`);
+        if (delay > 0) {
+          console.log(`Simulating ${delay}ms network delay`);
+          this.app.use((req, res, next) => setTimeout(next, delay));
+        }
         resolve(this);
       }).on('error', reject);
     });
@@ -109,6 +159,14 @@ class SecondaryServer {
         resolve();
       }
     });
+  }
+
+  clearRequestLog() {
+    this.requestLog = [];
+  }
+
+  getRequestLog() {
+    return this.requestLog;
   }
 }
 

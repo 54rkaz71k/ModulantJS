@@ -61,6 +61,11 @@ const modulant = Modulant.init({
 - Inject custom JavaScript
 - Minimal site disruption
 
+### 🔒 Code Obfuscation
+- Automatic code obfuscation protection
+- Hide implementation details
+- Prevent reverse engineering
+
 ## Real-World Scenarios (lol)
 
 1. **Academic Research**: Scrape data from research platforms

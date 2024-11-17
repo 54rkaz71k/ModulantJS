@@ -71,7 +71,7 @@ This project supports two types of testing:
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/steake/Modulant.js.git
+git clone https://github.com/54rkaz71k/Modulant.js.git
 
 # No additional dependencies required
 ```
@@ -161,6 +161,6 @@ Distributed under the MIT License.
 
 ### Contact
 
-Your Name - [@steake](https://github.com/steake)
+Your Name - [@54rkaz71k](https://github.com/54rkaz71k)
 
-Project Link: [https://github.com/steake/Modulant.js](https://github.com/steake/Modulant.js)
+Project Link: [https://github.com/54rkaz71k/Modulant.js](https://github.com/54rkaz71k/Modulant.js)

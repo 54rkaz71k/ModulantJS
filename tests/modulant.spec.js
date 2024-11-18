@@ -270,21 +270,28 @@ describe('Modulant.js Proxy Tool', function() {
     });
 
     afterEach(function() {
-        // Clean up iframes
-        const iframes = document.querySelectorAll('iframe');
-        iframes.forEach(iframe => iframe.remove());
+        // Only try to clean up DOM elements if document exists
+        if (typeof global.document !== 'undefined') {
+            // Clean up iframes
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => iframe.remove());
+        }
 
-        // Remove message event listeners
-        messageListeners.forEach(listener => {
-            window.removeEventListener('message', listener);
-        });
+        // Remove message event listeners if window exists
+        if (typeof global.window !== 'undefined') {
+            messageListeners.forEach(listener => {
+                window.removeEventListener('message', listener);
+            });
+        }
         messageListeners = [];
 
         // Restore all stubs and original methods
         sinon.restore();
-        global.window.fetch = originalFetch;
-        global.window.open = originalWindowOpen;
-        global.history.pushState = originalPushState;
+        if (typeof global.window !== 'undefined') {
+            global.window.fetch = originalFetch;
+            global.window.open = originalWindowOpen;
+            global.history.pushState = originalPushState;
+        }
     });
 
     describe('URL Parameter Handling', function() {
@@ -419,6 +426,228 @@ describe('Modulant.js Proxy Tool', function() {
             // Check route details
             expect(modulant.config.routes[0].match.hostname).to.equal('example.com');
             expect(modulant.config.routes[0].proxy.target).to.equal('http://example.com');
+        });
+    });
+
+    describe('ModulantError Handling', function() {
+        beforeEach(function() {
+            // Add test routes with error scenarios
+            modulant.addRoute({
+                match: { 
+                    hostname: 'example.com',
+                    path: '/error/*'
+                },
+                proxy: {
+                    target: 'http://example.com/error'
+                }
+            });
+        });
+
+        it('should throw ModulantError with correct code for initialization failure', async function() {
+            // Store original document and window
+            const originalDocument = global.document;
+            const originalWindow = global.window;
+
+            try {
+                // Break the initialization
+                global.document = undefined;
+                global.window = undefined;
+                
+                // Attempt initialization with a timeout
+                await Promise.race([
+                    Modulant.init({}),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Initialization timeout')), 1000)
+                    )
+                ]);
+                
+                expect.fail('Should have thrown an error');
+            } catch (error) {
+                expect(error).to.be.instanceOf(Modulant.ModulantError);
+                expect(error.code).to.equal('INIT_FAILED');
+                expect(error.context).to.be.an('object');
+            } finally {
+                // Restore globals immediately
+                global.document = originalDocument;
+                global.window = originalWindow;
+            }
+        });
+
+        it('should throw ModulantError with correct code for invalid route', function() {
+            try {
+                modulant.addRoute({
+                    match: { hostname: 'example.com' } // Missing path
+                });
+                expect.fail('Should have thrown an error');
+            } catch (error) {
+                expect(error).to.be.instanceOf(Modulant.ModulantError);
+                expect(error.code).to.equal('INVALID_ROUTE');
+                expect(error.context.route).to.be.an('object');
+            }
+        });
+
+        it('should throw ModulantError with correct code for proxy error', async function() {
+            // Make fetch throw an error
+            fetchStub.restore();
+            fetchStub = sinon.stub(global.window, 'fetch').rejects(new Error('Network error'));
+
+            try {
+                await modulant._proxyRequest('http://example.com/error/test');
+                expect.fail('Should have thrown an error');
+            } catch (error) {
+                expect(error).to.be.instanceOf(Modulant.ModulantError);
+                expect(error.code).to.equal('PROXY_ERROR');
+                expect(error.context.url).to.include('/error/test');
+            }
+        });
+    });
+
+    describe('Performance Monitoring', function() {
+        beforeEach(function() {
+            // Add test route with delay
+            modulant.addRoute({
+                match: { 
+                    hostname: 'example.com',
+                    path: '/slow/*'
+                },
+                proxy: {
+                    target: 'http://example.com/slow'
+                }
+            });
+        });
+
+        it('should track request durations', async function() {
+            // Simulate a delay in the fetch response
+            fetchStub.restore();
+            fetchStub = sinon.stub(global.window, 'fetch').callsFake(async () => {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                return new global.window.Response('Test response', {
+                    headers: { 'X-Response-Time': '100ms' }
+                });
+            });
+
+            await modulant._proxyRequest('http://example.com/slow/test');
+            const metrics = modulant.getRequestMetrics();
+            
+            expect(metrics).to.be.an('array');
+            if (metrics.length > 0) {
+                expect(metrics[0]).to.have.property('duration');
+                expect(metrics[0].duration).to.be.at.least(100);
+            }
+        });
+
+        it('should clean up metrics after request completion', async function() {
+            await modulant._proxyRequest('http://example.com/slow/test');
+            const metricsAfter = modulant.getRequestMetrics();
+            expect(metricsAfter).to.have.lengthOf(0);
+        });
+    });
+
+    describe('Response Modification', function() {
+        beforeEach(function() {
+            // Add route with response modification
+            modulant.addRoute({
+                match: { 
+                    hostname: 'example.com',
+                    path: '/modified/*'
+                },
+                proxy: {
+                    target: 'http://example.com/modified',
+                    modifyResponse: async (response) => {
+                        const text = await response.text();
+                        return new Response(
+                            JSON.stringify({ modified: true, original: text }),
+                            { headers: { 'X-Modified': 'true' } }
+                        );
+                    }
+                }
+            });
+        });
+
+        it('should apply response modifications when configured', async function() {
+            fetchStub.restore();
+            fetchStub = sinon.stub(global.window, 'fetch').callsFake(async () => {
+                return new global.window.Response('Original content', {
+                    headers: { 'Content-Type': 'text/plain' }
+                });
+            });
+
+            const response = await modulant._proxyRequest('http://example.com/modified/test');
+            const data = await response.json();
+            
+            expect(data.modified).to.be.true;
+            expect(data.original).to.equal('Original content');
+            expect(response.headers.get('X-Modified')).to.equal('true');
+        });
+
+        it('should handle response modification errors', async function() {
+            modulant.addRoute({
+                match: { 
+                    hostname: 'example.com',
+                    path: '/error-mod/*'
+                },
+                proxy: {
+                    target: 'http://example.com/error-mod',
+                    modifyResponse: async () => {
+                        throw new Error('Modification error');
+                    }
+                }
+            });
+
+            try {
+                await modulant._proxyRequest('http://example.com/error-mod/test');
+                expect.fail('Should have thrown an error');
+            } catch (error) {
+                expect(error).to.be.instanceOf(Modulant.ModulantError);
+                expect(error.code).to.equal('PROXY_ERROR');
+                expect(error.context.error).to.equal('Modification error');
+            }
+        });
+    });
+
+    describe('Debug Logging', function() {
+        let consoleLogStub;
+        let consoleErrorStub;
+
+        beforeEach(function() {
+            consoleLogStub = sinon.stub(console, 'log');
+            consoleErrorStub = sinon.stub(console, 'error');
+            process.env.DEBUG_MODULANT = 'true';
+        });
+
+        afterEach(function() {
+            consoleLogStub.restore();
+            consoleErrorStub.restore();
+            delete process.env.DEBUG_MODULANT;
+        });
+
+        it('should log performance metrics when debug is enabled', async function() {
+            await modulant._proxyRequest('http://example.com/api/test');
+            
+            expect(consoleLogStub.calledWith(
+                sinon.match(/\[ModulantJS Performance\]/)
+            )).to.be.true;
+        });
+
+        it('should log errors with context when debug is enabled', async function() {
+            try {
+                await modulant._proxyRequest('invalid-url');
+            } catch (error) {
+                expect(consoleErrorStub.calledWith(
+                    sinon.match(/\[ModulantJS Error\]/)
+                )).to.be.true;
+            }
+        });
+
+        it('should include detailed debug information in logs', async function() {
+            await modulant._proxyRequest('http://example.com/api/test?debug=true');
+            
+            expect(consoleLogStub.calledWith(
+                sinon.match('Processing URL parameters for:')
+            )).to.be.true;
+            expect(consoleLogStub.calledWith(
+                sinon.match('Parameters after adding defaults:')
+            )).to.be.true;
         });
     });
 });

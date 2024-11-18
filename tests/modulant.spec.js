@@ -134,6 +134,7 @@ describe('Modulant.js Proxy Tool', function() {
     let originalFetch;
     let originalWindowOpen;
     let originalPushState;
+    let messageListeners = [];
 
     const testRoutes = [
         {
@@ -147,7 +148,20 @@ describe('Modulant.js Proxy Tool', function() {
         }
     ];
 
+    // Track event listeners
+    const originalAddEventListener = window.addEventListener;
+    window.addEventListener = function(type, listener, ...args) {
+        if (type === 'message') {
+            messageListeners.push(listener);
+        }
+        return originalAddEventListener.call(this, type, listener, ...args);
+    };
+
     beforeEach(async function() {
+        // Reset DOM for each test
+        document.body.innerHTML = '';
+        messageListeners = [];
+        
         console.log('Setting up test environment...');
         
         // Store original methods
@@ -256,6 +270,16 @@ describe('Modulant.js Proxy Tool', function() {
     });
 
     afterEach(function() {
+        // Clean up iframes
+        const iframes = document.querySelectorAll('iframe');
+        iframes.forEach(iframe => iframe.remove());
+
+        // Remove message event listeners
+        messageListeners.forEach(listener => {
+            window.removeEventListener('message', listener);
+        });
+        messageListeners = [];
+
         // Restore all stubs and original methods
         sinon.restore();
         global.window.fetch = originalFetch;

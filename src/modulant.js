@@ -1,5 +1,14 @@
 // Modulant.js - Stealth Web Extension Framework
 (function(global) {
+  // Debug logging utility
+  const debug = {
+    log: (...args) => {
+      if (typeof process !== 'undefined' && process.env.DEBUG_MODULANT === 'true') {
+        console.log('[ModulantJS Debug]', ...args);
+      }
+    }
+  };
+
   class Modulant {
     constructor(config = {}) {
       // Core configuration
@@ -13,6 +22,14 @@
           'X-Requested-With': 'XMLHttpRequest',
           'Sec-Fetch-Mode': 'cors',
           'Sec-Fetch-Site': 'same-origin'
+        },
+        // New URL parameter configuration
+        parameterConfig: {
+          ...config.parameterConfig,
+          transformHooks: config.parameterConfig?.transformHooks || {},
+          parameterRules: config.parameterConfig?.parameterRules || {},
+          defaultValues: config.parameterConfig?.defaultValues || {},
+          filterPatterns: config.parameterConfig?.filterPatterns || []
         }
       };
 
@@ -26,6 +43,144 @@
       // Initialize only if in browser
       if (typeof window !== 'undefined' && window.document) {
         this._initPromise = this._initialize();
+      }
+    }
+
+    // New URL parameter handling methods
+    _processURLParameters(url, route) {
+      try {
+        debug.log('Processing URL parameters for:', url);
+        const parsedUrl = new URL(url, window.location.origin);
+        debug.log('Parsed URL:', parsedUrl.toString());
+        
+        const params = new URLSearchParams(parsedUrl.search);
+        debug.log('Original parameters:', Object.fromEntries(params.entries()));
+        
+        const processedParams = new URLSearchParams();
+
+        // Apply parameter rules and transformations
+        parameterLoop: for (const [key, value] of params.entries()) {
+          debug.log(`\nProcessing parameter: ${key}=${value}`);
+
+          // Check filter patterns
+          if (this._shouldFilterParameter(key)) {
+            debug.log(`Parameter ${key} filtered by pattern`);
+            continue parameterLoop;
+          }
+
+          // Apply transformation hooks
+          const transformedValue = this._applyTransformHooks(key, value);
+          debug.log(`Transformed value for ${key}:`, transformedValue);
+
+          // Get validation rules for this parameter
+          const rules = this.config.parameterConfig.parameterRules[key];
+          debug.log(`Validation rules for ${key}:`, rules);
+
+          // If parameter has rules, validate it
+          if (rules) {
+            debug.log(`Validating parameter ${key} with rules:`, rules);
+            const isValid = this._validateParameter(key, transformedValue);
+            debug.log(`Validation result for ${key}: ${isValid}`);
+            
+            if (!isValid) {
+              debug.log(`Parameter ${key} failed validation, skipping`);
+              continue parameterLoop;
+            }
+          }
+
+          // Add parameter if it passed validation or has no rules
+          debug.log(`Adding parameter ${key}=${transformedValue} to processed params`);
+          processedParams.append(key, transformedValue);
+        }
+
+        // Add default values for missing parameters
+        this._addDefaultParameters(processedParams);
+        debug.log('Parameters after adding defaults:', Object.fromEntries(processedParams.entries()));
+
+        // Build final URL
+        const targetUrl = new URL(route.proxy.target + parsedUrl.pathname);
+        targetUrl.search = processedParams.toString();
+        debug.log('Final processed URL:', targetUrl.toString());
+        
+        return targetUrl.toString();
+      } catch (error) {
+        debug.log('Error processing URL parameters:', error);
+        return url;
+      }
+    }
+
+    _shouldFilterParameter(key) {
+      const shouldFilter = this.config.parameterConfig.filterPatterns.some(pattern => 
+        new RegExp(pattern).test(key)
+      );
+      debug.log(`Filter check for ${key}: ${shouldFilter}`);
+      return shouldFilter;
+    }
+
+    _applyTransformHooks(key, value) {
+      const hook = this.config.parameterConfig.transformHooks[key];
+      if (typeof hook === 'function') {
+        try {
+          const transformed = hook(value);
+          debug.log(`Transform hook applied for ${key}: ${value} -> ${transformed}`);
+          return transformed;
+        } catch (error) {
+          debug.log(`Error in transform hook for ${key}:`, error);
+          return value;
+        }
+      }
+      return value;
+    }
+
+    _validateParameter(key, value) {
+      const rules = this.config.parameterConfig.parameterRules[key];
+      if (!rules) {
+        debug.log(`No validation rules for ${key}`);
+        return true;
+      }
+
+      try {
+        // Check required rule
+        if (rules.required && (!value || value.trim() === '')) {
+          debug.log(`Parameter ${key} failed required validation`);
+          return false;
+        }
+
+        // Check pattern rule
+        if (rules.pattern) {
+          const pattern = new RegExp(rules.pattern);
+          const matches = pattern.test(value);
+          debug.log(`Pattern validation for ${key}: ${rules.pattern} -> ${matches}`);
+          if (!matches) {
+            debug.log(`Parameter ${key} failed pattern validation`);
+            return false;
+          }
+        }
+
+        // Check custom validation
+        if (rules.validate && typeof rules.validate === 'function') {
+          const isValid = rules.validate(value);
+          debug.log(`Custom validation for ${key}: ${isValid}`);
+          if (!isValid) {
+            debug.log(`Parameter ${key} failed custom validation`);
+            return false;
+          }
+        }
+
+        debug.log(`Parameter ${key} passed all validations`);
+        return true;
+      } catch (error) {
+        debug.log(`Error validating parameter ${key}:`, error);
+        return false;
+      }
+    }
+
+    _addDefaultParameters(params) {
+      for (const [key, value] of Object.entries(this.config.parameterConfig.defaultValues)) {
+        if (!params.has(key)) {
+          debug.log(`Adding default value for ${key}: ${value}`);
+          params.append(key, value);
+        }
       }
     }
 
@@ -57,7 +212,7 @@
 
         // Add test event handler
         window.addEventListener('message', (event) => {
-          console.log('[Modulant Parent] Received message:', event.data);
+          debug.log('[Modulant Parent] Received message:', event.data);
         });
       });
     }
@@ -74,7 +229,9 @@
             <script>
               // Debug logging
               function log(msg) {
-                console.log('[Modulant Frame]', msg);
+                if (typeof process !== 'undefined' && process.env.DEBUG_MODULANT === 'true') {
+                  console.log('[Modulant Frame]', msg);
+                }
               }
 
               // Execute injected script
@@ -144,12 +301,12 @@
     }
 
     sendTestEvent() {
-      console.log('[Modulant Parent] Sending test event');
+      debug.log('[Modulant Parent] Sending test event');
       if (this._state.proxyFrame && this._state.proxyFrame.contentWindow) {
         this._state.proxyFrame.contentWindow.postMessage('test-custom-event', '*');
-        console.log('[Modulant Parent] Test event sent');
+        debug.log('[Modulant Parent] Test event sent');
       } else {
-        console.log('[Modulant Parent] No proxy frame available');
+        debug.log('[Modulant Parent] No proxy frame available');
       }
     }
 
@@ -198,7 +355,8 @@
             headers: event.data.headers
           });
 
-          const proxyUrl = route.proxy.target + new URL(url, window.location.origin).pathname;
+          // Process URL parameters for the proxy URL
+          const proxyUrl = this._processURLParameters(url, route);
           Object.defineProperties(response, {
             url: { value: proxyUrl },
             text: { value: async () => event.data.body }
@@ -208,10 +366,12 @@
         };
 
         window.addEventListener('message', handler);
+        // Use processed URL for the proxy request
+        const processedUrl = this._processURLParameters(url, route);
         this._state.proxyFrame.contentWindow.postMessage({
           type: 'proxy',
           id,
-          url: route.proxy.target + new URL(url, window.location.origin).pathname,
+          url: processedUrl,
           init
         }, '*');
       });
@@ -278,7 +438,8 @@
         if (!route) return;
 
         event.preventDefault();
-        const proxyUrl = route.proxy.target + new URL(link.href, window.location.origin).pathname;
+        // Process URL parameters for navigation
+        const proxyUrl = this._processURLParameters(link.href, route);
         window.location.href = proxyUrl;
       }, true);
 
@@ -286,7 +447,8 @@
         const route = this._findMatchingRoute(url);
         if (!route) return this._state.originalFunctions.get('open')(url, ...args);
 
-        const proxyUrl = route.proxy.target + new URL(url, window.location.origin).pathname;
+        // Process URL parameters for window.open
+        const proxyUrl = this._processURLParameters(url, route);
         return this._state.originalFunctions.get('open')(proxyUrl, ...args);
       };
 
@@ -295,9 +457,11 @@
         if (!route) return this._state.originalFunctions.get('pushState').call(history, state, title, url);
 
         const parsedUrl = new URL(url, window.location.origin);
+        // Process URL parameters for pushState
+        const proxyUrl = this._processURLParameters(url, route);
         return this._state.originalFunctions.get('pushState').call(
           history,
-          { ...state, modulant: true, targetUrl: route.proxy.target + parsedUrl.pathname },
+          { ...state, modulant: true, targetUrl: proxyUrl },
           title,
           parsedUrl.pathname
         );

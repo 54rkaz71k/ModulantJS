@@ -155,9 +155,33 @@ describe('Modulant.js Proxy Tool', function() {
         originalWindowOpen = global.window.open;
         originalPushState = global.history.pushState;
 
-        // Initialize Modulant with test routes
+        // Initialize Modulant with test routes and parameter config
         console.log('Initializing Modulant...');
-        modulant = new Modulant({ routes: testRoutes });
+        modulant = new Modulant({
+            routes: testRoutes,
+            parameterConfig: {
+                transformHooks: {
+                    'uppercase': (value) => value.toUpperCase(),
+                    'base64': (value) => btoa(value)
+                },
+                parameterRules: {
+                    'required_param': { required: true },
+                    'pattern_param': { pattern: '^[0-9]+$' },
+                    'custom_param': { 
+                        validate: (value) => {
+                            console.log(`Custom validation for custom_param length: ${value.length}`);
+                            return value.length > 5;
+                        }
+                    }
+                },
+                defaultValues: {
+                    'default_param': 'default_value'
+                },
+                filterPatterns: [
+                    '^_internal_'
+                ]
+            }
+        });
         
         // Manually trigger ready event
         setTimeout(() => {
@@ -172,9 +196,9 @@ describe('Modulant.js Proxy Tool', function() {
             const route = modulant._findMatchingRoute(url);
             
             if (route && route.proxy) {
-                const proxyUrl = route.proxy.target + new URL(url, window.location.origin).pathname;
+                const proxyUrl = modulant._processURLParameters(url, route);
                 
-                // Simulate proxied fetch
+                // Store the processed URL for verification
                 fetchStub.lastProxyUrl = proxyUrl;
                 
                 return new global.window.Response('Proxied content', {
@@ -192,7 +216,7 @@ describe('Modulant.js Proxy Tool', function() {
             const route = modulant._findMatchingRoute(url);
             
             if (route && route.proxy) {
-                const proxyUrl = route.proxy.target + new URL(url, window.location.origin).pathname;
+                const proxyUrl = modulant._processURLParameters(url, route);
                 
                 // Store proxy URL for verification
                 windowOpenStub.lastProxyUrl = proxyUrl;
@@ -218,7 +242,7 @@ describe('Modulant.js Proxy Tool', function() {
             const route = modulant._findMatchingRoute(parsedUrl.href);
             
             if (route && route.proxy) {
-                const proxyUrl = route.proxy.target + parsedUrl.pathname;
+                const proxyUrl = modulant._processURLParameters(url, route);
                 
                 // Use the proxyUrl instead of the original url
                 pushStateStub.lastProxyUrl = proxyUrl;
@@ -239,13 +263,83 @@ describe('Modulant.js Proxy Tool', function() {
         global.history.pushState = originalPushState;
     });
 
+    describe('URL Parameter Handling', function() {
+        it('should apply parameter transformations', async function() {
+            const testURL = 'http://example.com/api/test?uppercase=hello&base64=world';
+            await global.window.fetch(testURL);
+            
+            const finalUrl = new URL(fetchStub.lastProxyUrl);
+            const params = new URLSearchParams(finalUrl.search);
+            
+            expect(params.get('uppercase')).to.equal('HELLO');
+            expect(params.get('base64')).to.equal('d29ybGQ='); // 'world' in base64
+        });
+
+        it('should validate parameters according to rules', async function() {
+            const testURL = 'http://example.com/api/test?required_param=value&pattern_param=123&custom_param=longvalue';
+            await global.window.fetch(testURL);
+            
+            const finalUrl = new URL(fetchStub.lastProxyUrl);
+            const params = new URLSearchParams(finalUrl.search);
+            
+            expect(params.has('required_param')).to.be.true;
+            expect(params.get('pattern_param')).to.equal('123');
+            expect(params.get('custom_param')).to.equal('longvalue');
+        });
+
+        it('should filter out internal parameters', async function() {
+            const testURL = 'http://example.com/api/test?_internal_param=secret&public_param=visible';
+            await global.window.fetch(testURL);
+            
+            const finalUrl = new URL(fetchStub.lastProxyUrl);
+            const params = new URLSearchParams(finalUrl.search);
+            
+            expect(params.has('_internal_param')).to.be.false;
+            expect(params.has('public_param')).to.be.true;
+        });
+
+        it('should add default parameters when missing', async function() {
+            const testURL = 'http://example.com/api/test?existing_param=value';
+            await global.window.fetch(testURL);
+            
+            const finalUrl = new URL(fetchStub.lastProxyUrl);
+            const params = new URLSearchParams(finalUrl.search);
+            
+            expect(params.get('default_param')).to.equal('default_value');
+            expect(params.get('existing_param')).to.equal('value');
+        });
+
+        it('should handle invalid parameter values gracefully', async function() {
+            const testURL = 'http://example.com/api/test?pattern_param=invalid&custom_param=short';
+            await global.window.fetch(testURL);
+            
+            const finalUrl = new URL(fetchStub.lastProxyUrl);
+            const params = new URLSearchParams(finalUrl.search);
+            
+            // Invalid parameters should be filtered out
+            expect(params.has('pattern_param')).to.be.false;
+            expect(params.has('custom_param')).to.be.false;
+        });
+
+        it('should preserve valid complex parameters', async function() {
+            const testURL = 'http://example.com/api/test?array[]=1&array[]=2&nested[key]=value';
+            await global.window.fetch(testURL);
+            
+            const finalUrl = new URL(fetchStub.lastProxyUrl);
+            const params = new URLSearchParams(finalUrl.search);
+            
+            expect(params.getAll('array[]')).to.deep.equal(['1', '2']);
+            expect(params.get('nested[key]')).to.equal('value');
+        });
+    });
+
     describe('Fetch Interception', function() {
         it('should intercept and route fetch requests', async function() {
             const testURL = 'http://example.com/api/test-endpoint';
             
             // Perform the actual fetch
             await global.window.fetch(testURL);
-            expect(fetchStub.lastProxyUrl).to.equal('http://example.com/api/test-endpoint');
+            expect(fetchStub.lastProxyUrl).to.include('/api/test-endpoint');
         });
     });
 
@@ -255,7 +349,7 @@ describe('Modulant.js Proxy Tool', function() {
             
             // Perform the actual window.open
             global.window.open(testURL);
-            expect(windowOpenStub.lastProxyUrl).to.equal('http://example.com/api/new-page');
+            expect(windowOpenStub.lastProxyUrl).to.include('/api/new-page');
         });
     });
 
@@ -265,9 +359,7 @@ describe('Modulant.js Proxy Tool', function() {
 
             // Perform pushState
             global.history.pushState(null, '', testURL);
-
-            // Verify pushState was intercepted and routed
-            expect(pushStateStub.lastProxyUrl).to.equal('http://example.com/api/new-state');
+            expect(pushStateStub.lastProxyUrl).to.include('/api/new-state');
         });
     });
 
@@ -291,7 +383,7 @@ describe('Modulant.js Proxy Tool', function() {
 
             // Test non-matching routes
             const nonMatchedRoute = modulant._findMatchingRoute('http://unmatched.com/path');
-            expect(nonMatchedRoute).to.be.undefined;  // Changed from null to undefined
+            expect(nonMatchedRoute).to.be.undefined;
         });
     });
 

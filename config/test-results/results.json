@@ -66,266 +66,190 @@
       "specs": [],
       "suites": [
         {
-          "title": "Modulant.js Simplified Tests",
+          "title": "Modulant.js Integration Tests",
           "file": "modulant.playwright.spec.js",
           "line": 5,
           "column": 6,
-          "specs": [
+          "specs": [],
+          "suites": [
             {
-              "title": "should initialize Modulant and create hidden iframe",
-              "ok": true,
-              "tags": [],
-              "tests": [
+              "title": "URL Parameter Handling",
+              "file": "modulant.playwright.spec.js",
+              "line": 23,
+              "column": 8,
+              "specs": [
                 {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
+                  "title": "should preserve complex parameters",
+                  "ok": false,
+                  "tags": [],
+                  "tests": [
                     {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 661,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2024-11-17T01:12:04.035Z",
-                      "attachments": []
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "status": "failed",
+                          "duration": 556,
+                          "error": {
+                            "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m[\"1\", \"2\"]\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m",
+                            "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m[\"1\", \"2\"]\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m\n    at /Users/oli/code/ModulantJS/tests/playwright/modulant.playwright.spec.js:68:42",
+                            "location": {
+                              "file": "/Users/oli/code/ModulantJS/tests/playwright/modulant.playwright.spec.js",
+                              "column": 42,
+                              "line": 68
+                            },
+                            "snippet": "\u001b[0m \u001b[90m 66 |\u001b[39m       \n \u001b[90m 67 |\u001b[39m       \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 68 |\u001b[39m       expect(data\u001b[33m.\u001b[39mparameters[\u001b[32m'array[]'\u001b[39m])\u001b[33m.\u001b[39mtoEqual([\u001b[32m'1'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'2'\u001b[39m])\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 69 |\u001b[39m       expect(data\u001b[33m.\u001b[39mparameters[\u001b[32m'nested[key]'\u001b[39m])\u001b[33m.\u001b[39mtoBe(\u001b[32m'value'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 70 |\u001b[39m       expect(data\u001b[33m.\u001b[39mparameters\u001b[33m.\u001b[39mdefault_param)\u001b[33m.\u001b[39mtoBe(\u001b[32m'default_value'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m"
+                          },
+                          "errors": [
+                            {
+                              "location": {
+                                "file": "/Users/oli/code/ModulantJS/tests/playwright/modulant.playwright.spec.js",
+                                "column": 42,
+                                "line": 68
+                              },
+                              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32m[\"1\", \"2\"]\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m\n\n\u001b[0m \u001b[90m 66 |\u001b[39m       \n \u001b[90m 67 |\u001b[39m       \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 68 |\u001b[39m       expect(data\u001b[33m.\u001b[39mparameters[\u001b[32m'array[]'\u001b[39m])\u001b[33m.\u001b[39mtoEqual([\u001b[32m'1'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'2'\u001b[39m])\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 69 |\u001b[39m       expect(data\u001b[33m.\u001b[39mparameters[\u001b[32m'nested[key]'\u001b[39m])\u001b[33m.\u001b[39mtoBe(\u001b[32m'value'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 70 |\u001b[39m       expect(data\u001b[33m.\u001b[39mparameters\u001b[33m.\u001b[39mdefault_param)\u001b[33m.\u001b[39mtoBe(\u001b[32m'default_value'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m     })\u001b[33m;\u001b[39m\u001b[0m\n\n\u001b[2m    at /Users/oli/code/ModulantJS/tests/playwright/modulant.playwright.spec.js:68:42\u001b[22m"
+                            }
+                          ],
+                          "stdout": [],
+                          "stderr": [
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m=> selectors.setTestIdAttribute started \u001b[38;5;45m+0ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m=> browserType.launch started \u001b[38;5;45m+6ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m<= selectors.setTestIdAttribute succeeded \u001b[38;5;45m+8ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m<= browserType.launch succeeded \u001b[38;5;45m+577ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m=> browser.newContext started \u001b[38;5;45m+2ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m<= browser.newContext succeeded \u001b[38;5;45m+9ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m=> browserContext.newPage started \u001b[38;5;45m+4ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m<= browserContext.newPage succeeded \u001b[38;5;45m+218ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m=> page.goto started \u001b[38;5;45m+3ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0mnavigating to \"http://localhost:3000/test-page.html\", waiting until \"load\" \u001b[38;5;45m+4ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  \"commit\" event fired \u001b[38;5;45m+27ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  navigated to \"http://localhost:3000/test-page.html\" \u001b[38;5;45m+1ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  \"domcontentloaded\" event fired \u001b[38;5;45m+11ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  navigated to \"blob:http://localhost:3000/268558e6-eaa8-46b0-b5ca-81125ad37343\" \u001b[38;5;45m+14ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  \"load\" event fired \u001b[38;5;45m+5ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m<= page.goto succeeded \u001b[38;5;45m+2ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m=> page.waitForResponse started \u001b[38;5;45m+2ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m=> page.click started \u001b[38;5;45m+4ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0mwaiting for locator('#complex-params-link') \u001b[38;5;45m+11ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  locator resolved to <a id=\"complex-params-link\" href=\"/api/test?array[]=1&array[]=2&nested[key]=value\">Complex Parameters Test</a> \u001b[38;5;45m+34ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0mattempting click action \u001b[38;5;45m+4ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  waiting for element to be visible, enabled and stable \u001b[38;5;45m+0ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  element is visible, enabled and stable \u001b[38;5;45m+13ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  scrolling into view if needed \u001b[38;5;45m+0ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  done scrolling \u001b[38;5;45m+1ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  performing click action \u001b[38;5;45m+5ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  click action done \u001b[38;5;45m+34ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  waiting for scheduled navigations to finish \u001b[38;5;45m+0ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m<= page.waitForResponse succeeded \u001b[38;5;45m+6ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  \"commit\" event fired \u001b[38;5;45m+3ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  navigated to \"http://localhost:4000/api/test?array%5B%5D=1&array%5B%5D=2&nested%5Bkey%5D=value&default_param=default_value\" \u001b[38;5;45m+1ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  navigated to \"http://localhost:4000/api/test?array%5B%5D=1&array%5B%5D=2&nested%5Bkey%5D=value&default_param=default_value\" \u001b[38;5;45m+0ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  navigations have finished \u001b[38;5;45m+7ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  \"domcontentloaded\" event fired \u001b[38;5;45m+0ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m  \"load\" event fired \u001b[38;5;45m+1ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m<= page.click succeeded \u001b[38;5;45m+0ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m=> response.json started \u001b[38;5;45m+2ms\u001b[0m\n"
+                            },
+                            {
+                              "text": "  \u001b[38;5;45;1mpw:api \u001b[0m<= response.json succeeded \u001b[38;5;45m+64ms\u001b[0m\n"
+                            }
+                          ],
+                          "retry": 0,
+                          "startTime": "2024-11-18T04:31:28.805Z",
+                          "attachments": [],
+                          "errorLocation": {
+                            "file": "/Users/oli/code/ModulantJS/tests/playwright/modulant.playwright.spec.js",
+                            "column": 42,
+                            "line": 68
+                          }
+                        }
+                      ],
+                      "status": "unexpected"
                     }
                   ],
-                  "status": "expected"
+                  "id": "8a40b0e3f9807ce94ce6-366be40aad52fe1b1e3b",
+                  "file": "modulant.playwright.spec.js",
+                  "line": 61,
+                  "column": 5
                 }
-              ],
-              "id": "8a40b0e3f9807ce94ce6-ea0b77aff8c1c0ca1ab0",
-              "file": "modulant.playwright.spec.js",
-              "line": 14,
-              "column": 3
-            },
-            {
-              "title": "should intercept and route API requests to secondary server",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 384,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2024-11-17T01:12:05.689Z",
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "8a40b0e3f9807ce94ce6-8efcdf8412a8d765bd6a",
-              "file": "modulant.playwright.spec.js",
-              "line": 22,
-              "column": 3
-            },
-            {
-              "title": "should route non-API requests to primary server",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 461,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2024-11-17T01:12:06.083Z",
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "8a40b0e3f9807ce94ce6-513966d500786f6605e2",
-              "file": "modulant.playwright.spec.js",
-              "line": 27,
-              "column": 3
-            },
-            {
-              "title": "should intercept and modify link clicks",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 347,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2024-11-17T01:12:06.555Z",
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "8a40b0e3f9807ce94ce6-e72a8d2117913b3ff0f9",
-              "file": "modulant.playwright.spec.js",
-              "line": 36,
-              "column": 3
-            },
-            {
-              "title": "should prevent new window/tab opening and route within iframe",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 426,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2024-11-17T01:12:06.911Z",
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "8a40b0e3f9807ce94ce6-2489c1a41d841b87e574",
-              "file": "modulant.playwright.spec.js",
-              "line": 44,
-              "column": 3
-            },
-            {
-              "title": "should inject custom script into iframe",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 276,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2024-11-17T01:12:07.345Z",
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "8a40b0e3f9807ce94ce6-1a842c20cf4e2178c93b",
-              "file": "modulant.playwright.spec.js",
-              "line": 52,
-              "column": 3
-            },
-            {
-              "title": "should handle dynamic route addition",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 270,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2024-11-17T01:12:07.630Z",
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "8a40b0e3f9807ce94ce6-39bab4a3adcf835f3d04",
-              "file": "modulant.playwright.spec.js",
-              "line": 81,
-              "column": 3
-            },
-            {
-              "title": "should maintain proxy functionality across history navigation",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 360,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2024-11-17T01:12:07.909Z",
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "8a40b0e3f9807ce94ce6-ab21cb16b7a61186f6fa",
-              "file": "modulant.playwright.spec.js",
-              "line": 97,
-              "column": 3
+              ]
             }
           ]
         }
@@ -334,11 +258,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2024-11-17T01:12:01.773Z",
-    "duration": 8702.723,
-    "expected": 8,
+    "startTime": "2024-11-18T04:31:27.367Z",
+    "duration": 4957.096,
+    "expected": 0,
     "skipped": 0,
-    "unexpected": 0,
+    "unexpected": 1,
     "flaky": 0
   }
 }

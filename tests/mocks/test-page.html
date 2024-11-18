@@ -7,11 +7,41 @@
 </head>
 <body>
     <h1>Modulant Test Page</h1>
+    
+    <!-- Basic API Links -->
+    <h2>Basic Navigation Tests</h2>
     <a href="/api/test" id="api-link">API Test Link</a>
     <a href="/non-api/test" id="non-api-link">Non-API Test Link</a>
+    
+    <!-- URL Parameter Test Links -->
+    <h2>URL Parameter Tests</h2>
+    <a href="/api/test?uppercase=hello&base64=world" id="transform-link">Parameter Transform Test</a>
+    <a href="/api/test?required_param=value&pattern_param=123&custom_param=longvalue" id="validation-link">Parameter Validation Test</a>
+    <a href="/api/test?_internal_param=secret&public_param=visible" id="filter-link">Parameter Filter Test</a>
+    <a href="/api/test?array[]=1&array[]=2&nested[key]=value" id="complex-params-link">Complex Parameters Test</a>
+    
+    <!-- Test Buttons -->
+    <h2>Request Tests</h2>
     <button id="fetch-button">Fetch API Test</button>
     <button id="xhr-button">XHR API Test</button>
     <button id="window-open-button">Window Open Test</button>
+    
+    <!-- Parameter Input Form -->
+    <h2>Custom Parameter Test</h2>
+    <form id="param-test-form">
+        <div>
+            <label for="param-name">Parameter Name:</label>
+            <input type="text" id="param-name" value="test_param">
+        </div>
+        <div>
+            <label for="param-value">Parameter Value:</label>
+            <input type="text" id="param-value" value="test_value">
+        </div>
+        <button type="submit">Test Parameter</button>
+    </form>
+
+    <!-- Results Display -->
+    <h2>Results</h2>
     <div id="result"></div>
 
     <script src="/src/modulant.js"></script>
@@ -32,6 +62,25 @@
                         } 
                     }
                 ],
+                parameterConfig: {
+                    transformHooks: {
+                        'uppercase': (value) => value.toUpperCase(),
+                        'base64': (value) => btoa(value)
+                    },
+                    parameterRules: {
+                        'required_param': { required: true },
+                        'pattern_param': { pattern: '^[0-9]+$' },
+                        'custom_param': { 
+                            validate: (value) => value.length > 3
+                        }
+                    },
+                    defaultValues: {
+                        'default_param': 'default_value'
+                    },
+                    filterPatterns: [
+                        '^_internal_'
+                    ]
+                },
                 injectScript: `
                     window.addEventListener('message', (event) => {
                         if (event.data === 'test-custom-event') {
@@ -46,26 +95,29 @@
             console.error('Error initializing Modulant:', error);
         }
 
+        // Basic fetch test
         document.getElementById('fetch-button').addEventListener('click', async () => {
             console.log('Fetch button clicked');
             try {
                 const response = await fetch('/api/test');
-                const text = await response.text();
-                console.log('Fetch response:', text);
-                document.getElementById('result').textContent = `Fetch result: ${text}`;
+                const data = await response.json();
+                console.log('Fetch response:', data);
+                document.getElementById('result').textContent = `Fetch result: ${data.message}`;
             } catch (error) {
                 console.error('Fetch error:', error);
                 document.getElementById('result').textContent = `Fetch error: ${error.message}`;
             }
         });
 
+        // XHR test
         document.getElementById('xhr-button').addEventListener('click', () => {
             console.log('XHR button clicked');
             const xhr = new XMLHttpRequest();
             xhr.open('GET', '/api/test');
             xhr.onload = () => {
-                console.log('XHR response:', xhr.responseText);
-                document.getElementById('result').textContent = `XHR result: ${xhr.responseText}`;
+                const data = JSON.parse(xhr.responseText);
+                console.log('XHR response:', data);
+                document.getElementById('result').textContent = `XHR result: ${data.message}`;
             };
             xhr.onerror = () => {
                 console.error('XHR error:', xhr.status);
@@ -74,9 +126,26 @@
             xhr.send();
         });
 
+        // Window open test
         document.getElementById('window-open-button').addEventListener('click', () => {
             console.log('Window open button clicked');
             window.open('/api/test', '_blank');
+        });
+
+        // Custom parameter test form
+        document.getElementById('param-test-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const paramName = document.getElementById('param-name').value;
+            const paramValue = document.getElementById('param-value').value;
+            
+            const url = `/api/test?${paramName}=${encodeURIComponent(paramValue)}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                document.getElementById('result').textContent = `Parameter test result: ${data.message}`;
+            } catch (error) {
+                document.getElementById('result').textContent = `Parameter test error: ${error.message}`;
+            }
         });
     </script>
 </body>

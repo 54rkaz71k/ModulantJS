@@ -86,6 +86,31 @@ The project uses a comprehensive testing approach with both unit tests and integ
 - `npm run test:playwright:debug`: Run integration tests in debug mode
 - `npm run test:all`: Run all tests (unit and integration)
 
+### Debug Logging
+
+The project uses the `debug` module for detailed logging during testing:
+
+- Server logs: Enable with `DEBUG=modulant:server`
+- Test logs: Enable with `DEBUG=modulant:test`
+- All logs: Enable with `DEBUG=modulant:*`
+
+Example:
+```bash
+# Run tests with all debug logs
+DEBUG=modulant:* npm run test:playwright
+
+# Run tests with only server logs
+DEBUG=modulant:server npm run test:playwright
+```
+
+### Query Parameter Handling
+
+The test server supports various URL parameter formats:
+
+- Array parameters: `?array[]=1&array[]=2` becomes `{ array: ['1', '2'] }`
+- Nested parameters: `?nested[key]=value` becomes `{ nested: { key: 'value' } }`
+- Single values in array parameters are automatically converted to arrays for consistent handling
+
 ### Test Infrastructure
 
 #### Unit Tests

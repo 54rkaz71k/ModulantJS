@@ -69,10 +69,10 @@ test.describe('Modulant.js Integration Tests', () => {
       const data = await response.json();
       debug('Response data:', JSON.stringify(data, null, 2));
       debug('Parameters:', JSON.stringify(data.parameters, null, 2));
-      debug('Array parameter:', data.parameters['array[]']);
+      debug('Array parameter:', data.parameters.array);
       
-      expect(data.parameters['array[]']).toEqual(['1', '2']);
-      expect(data.parameters['nested[key]']).toBe('value');
+      expect(data.parameters.array).toEqual(['1', '2']);
+      expect(data.parameters.nested.key).toBe('value');
       expect(data.parameters.default_param).toBe('default_value');
     });
 
@@ -108,6 +108,8 @@ test.describe('Modulant.js Integration Tests', () => {
   // Original Tests
   test('should intercept and route API requests to secondary server', async ({ page }) => {
     await page.click('#fetch-button');
+    // Wait for the result to be populated
+    await page.waitForFunction(() => document.getElementById('result').textContent.includes('API route response'));
     const result = await page.locator('#result').textContent();
     expect(result).toContain('API route response');
   });

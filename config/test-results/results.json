@@ -66,9 +66,9 @@
       "specs": [],
       "suites": [
         {
-          "title": "Modulant.js Simplified Tests",
+          "title": "Modulant.js Integration Tests",
           "file": "modulant.playwright.spec.js",
-          "line": 5,
+          "line": 6,
           "column": 6,
           "specs": [
             {
@@ -86,21 +86,21 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 661,
+                      "duration": 573,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2024-11-17T01:12:04.035Z",
+                      "startTime": "2024-11-18T05:03:51.075Z",
                       "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "8a40b0e3f9807ce94ce6-ea0b77aff8c1c0ca1ab0",
+              "id": "8a40b0e3f9807ce94ce6-7ff8877efefe26973c7d",
               "file": "modulant.playwright.spec.js",
-              "line": 14,
+              "line": 15,
               "column": 3
             },
             {
@@ -118,21 +118,21 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 384,
+                      "duration": 258,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2024-11-17T01:12:05.689Z",
+                      "startTime": "2024-11-18T05:03:55.066Z",
                       "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "8a40b0e3f9807ce94ce6-8efcdf8412a8d765bd6a",
+              "id": "8a40b0e3f9807ce94ce6-f60245758447c21187a0",
               "file": "modulant.playwright.spec.js",
-              "line": 22,
+              "line": 109,
               "column": 3
             },
             {
@@ -150,21 +150,21 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 461,
+                      "duration": 268,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2024-11-17T01:12:06.083Z",
+                      "startTime": "2024-11-18T05:03:55.330Z",
                       "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "8a40b0e3f9807ce94ce6-513966d500786f6605e2",
+              "id": "8a40b0e3f9807ce94ce6-645132854b774aaeb723",
               "file": "modulant.playwright.spec.js",
-              "line": 27,
+              "line": 117,
               "column": 3
             },
             {
@@ -182,21 +182,21 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 347,
+                      "duration": 372,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2024-11-17T01:12:06.555Z",
+                      "startTime": "2024-11-18T05:03:55.604Z",
                       "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "8a40b0e3f9807ce94ce6-e72a8d2117913b3ff0f9",
+              "id": "8a40b0e3f9807ce94ce6-3840fa860ffef31874c9",
               "file": "modulant.playwright.spec.js",
-              "line": 36,
+              "line": 126,
               "column": 3
             },
             {
@@ -214,21 +214,21 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 426,
+                      "duration": 278,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2024-11-17T01:12:06.911Z",
+                      "startTime": "2024-11-18T05:03:55.983Z",
                       "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "8a40b0e3f9807ce94ce6-2489c1a41d841b87e574",
+              "id": "8a40b0e3f9807ce94ce6-0a6e9ee0161907d6c5ab",
               "file": "modulant.playwright.spec.js",
-              "line": 44,
+              "line": 134,
               "column": 3
             },
             {
@@ -246,21 +246,21 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 276,
+                      "duration": 203,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2024-11-17T01:12:07.345Z",
+                      "startTime": "2024-11-18T05:03:56.267Z",
                       "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "8a40b0e3f9807ce94ce6-1a842c20cf4e2178c93b",
+              "id": "8a40b0e3f9807ce94ce6-58cb5c6976284e051b39",
               "file": "modulant.playwright.spec.js",
-              "line": 52,
+              "line": 142,
               "column": 3
             },
             {
@@ -278,21 +278,21 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 270,
+                      "duration": 293,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2024-11-17T01:12:07.630Z",
+                      "startTime": "2024-11-18T05:03:56.476Z",
                       "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "8a40b0e3f9807ce94ce6-39bab4a3adcf835f3d04",
+              "id": "8a40b0e3f9807ce94ce6-5d530f87214ffb8d5d9a",
               "file": "modulant.playwright.spec.js",
-              "line": 81,
+              "line": 171,
               "column": 3
             },
             {
@@ -310,22 +310,224 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 360,
+                      "duration": 193,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2024-11-17T01:12:07.909Z",
+                      "startTime": "2024-11-18T05:03:56.774Z",
                       "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "8a40b0e3f9807ce94ce6-ab21cb16b7a61186f6fa",
+              "id": "8a40b0e3f9807ce94ce6-2d129bb6ee5bc88d9ce1",
               "file": "modulant.playwright.spec.js",
-              "line": 97,
+              "line": 187,
               "column": 3
+            }
+          ],
+          "suites": [
+            {
+              "title": "URL Parameter Handling",
+              "file": "modulant.playwright.spec.js",
+              "line": 24,
+              "column": 8,
+              "specs": [
+                {
+                  "title": "should transform parameters correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "status": "passed",
+                          "duration": 457,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2024-11-18T05:03:52.470Z",
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "8a40b0e3f9807ce94ce6-486b58105638dafa3847",
+                  "file": "modulant.playwright.spec.js",
+                  "line": 25,
+                  "column": 5
+                },
+                {
+                  "title": "should validate parameters according to rules",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "status": "passed",
+                          "duration": 264,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2024-11-18T05:03:52.936Z",
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "8a40b0e3f9807ce94ce6-29544d3a38fe24dbde35",
+                  "file": "modulant.playwright.spec.js",
+                  "line": 37,
+                  "column": 5
+                },
+                {
+                  "title": "should filter out internal parameters",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "status": "passed",
+                          "duration": 328,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2024-11-18T05:03:53.206Z",
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "8a40b0e3f9807ce94ce6-b6ac7c32874a491d6379",
+                  "file": "modulant.playwright.spec.js",
+                  "line": 50,
+                  "column": 5
+                },
+                {
+                  "title": "should preserve complex parameters",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "status": "passed",
+                          "duration": 480,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2024-11-18T05:03:53.540Z",
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "8a40b0e3f9807ce94ce6-366be40aad52fe1b1e3b",
+                  "file": "modulant.playwright.spec.js",
+                  "line": 62,
+                  "column": 5
+                },
+                {
+                  "title": "should handle custom parameter input",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "status": "passed",
+                          "duration": 563,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2024-11-18T05:03:54.027Z",
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "8a40b0e3f9807ce94ce6-3dc146222a3558086760",
+                  "file": "modulant.playwright.spec.js",
+                  "line": 79,
+                  "column": 5
+                },
+                {
+                  "title": "should reject invalid parameters",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 30000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 0,
+                          "status": "passed",
+                          "duration": 460,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2024-11-18T05:03:54.600Z",
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "8a40b0e3f9807ce94ce6-573bf3b1e44924bc1c19",
+                  "file": "modulant.playwright.spec.js",
+                  "line": 93,
+                  "column": 5
+                }
+              ]
             }
           ]
         }
@@ -334,9 +536,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2024-11-17T01:12:01.773Z",
-    "duration": 8702.723,
-    "expected": 8,
+    "startTime": "2024-11-18T05:03:49.095Z",
+    "duration": 10002.451000000001,
+    "expected": 14,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

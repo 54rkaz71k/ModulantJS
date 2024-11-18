@@ -1,12 +1,13 @@
 const express = require('express');
 const path = require('path');
 const net = require('net');
+const debug = require('debug')('modulant:server');
 
 // Create separate apps for primary and secondary servers
 const primaryApp = express();
 const secondaryApp = express();
 
-// Enable CORS for both servers
+// Enable CORS and parameter parsing for both servers
 const corsMiddleware = (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', '*');
@@ -14,8 +15,28 @@ const corsMiddleware = (req, res, next) => {
     next();
 };
 
+// Add request logging middleware
+const requestLogger = (req, res, next) => {
+    debug('Request URL:', req.url);
+    debug('Raw query:', req._parsedUrl.query);
+    debug('Parsed query:', req.query);
+    next();
+};
+
 primaryApp.use(corsMiddleware);
 secondaryApp.use(corsMiddleware);
+
+// Configure express query parser
+primaryApp.use(express.urlencoded({ extended: true }));
+secondaryApp.use(express.urlencoded({ extended: true }));
+
+// Add query parser middleware
+primaryApp.use(express.query({}));
+secondaryApp.use(express.query({}));
+
+// Add request logging in debug mode
+primaryApp.use(requestLogger);
+secondaryApp.use(requestLogger);
 
 // Add health check endpoint for both servers
 primaryApp.get('/', (req, res) => {
@@ -38,29 +59,53 @@ primaryApp.use(express.static(path.join(__dirname, '../../'), {
 
 // Primary server routes
 primaryApp.get('/non-api/test', (req, res) => {
-    console.log('Primary server: Received request for /non-api/test');
+    debug('Primary server: Received request for /non-api/test');
     res.send('Non-API route response');
 });
 
-// Secondary server routes
+// Secondary server routes with parameter handling
 secondaryApp.get('/api/test', (req, res) => {
-    console.log('Secondary server: Received request for /api/test');
-    res.send('API route response');
+    debug('Secondary server: Received request for /api/test');
+    debug('Full URL:', req.url);
+    debug('Raw query string:', req._parsedUrl.query);
+    debug('Query parameters:', JSON.stringify(req.query, null, 2));
+
+    // Handle array parameters
+    const parameters = {};
+    for (const [key, value] of Object.entries(req.query)) {
+        if (key.endsWith('[]')) {
+            // Ensure array values are always arrays
+            parameters[key] = Array.isArray(value) ? value : [value];
+            debug(`Processing array parameter ${key}:`, parameters[key]);
+        } else {
+            parameters[key] = value;
+        }
+    }
+
+    // Return parameters in response for verification
+    res.json({
+        message: 'API route response',
+        parameters
+    });
 });
 
 secondaryApp.get('/dynamic/test', (req, res) => {
-    console.log('Secondary server: Received request for /dynamic/test');
-    res.send('API route response');
+    debug('Secondary server: Received request for /dynamic/test');
+    debug('Query parameters:', JSON.stringify(req.query, null, 2));
+    res.json({
+        message: 'API route response',
+        parameters: req.query
+    });
 });
 
-// Log all requests
+// Log all requests in debug mode
 primaryApp.use((req, res, next) => {
-    console.log('Primary server:', req.method, req.url);
+    debug('Primary server:', req.method, req.url);
     next();
 });
 
 secondaryApp.use((req, res, next) => {
-    console.log('Secondary server:', req.method, req.url);
+    debug('Secondary server:', req.method, req.url);
     next();
 });
 
@@ -68,11 +113,11 @@ secondaryApp.use((req, res, next) => {
 primaryApp.get('*', (req, res) => {
     if (req.path.endsWith('.js')) {
         const jsPath = path.join(__dirname, '../../', req.path);
-        console.log('Primary server: Serving JavaScript file:', jsPath);
+        debug('Primary server: Serving JavaScript file:', jsPath);
         res.set('Content-Type', 'application/javascript');
         res.sendFile(jsPath);
     } else {
-        console.log(`Primary server: Serving test-page.html for path: ${req.path}`);
+        debug(`Primary server: Serving test-page.html for path: ${req.path}`);
         res.sendFile(path.join(__dirname, 'test-page.html'));
     }
 });
@@ -146,8 +191,10 @@ const startServer = async (app, port, name) => {
 
 // Start the appropriate server based on the port
 if (port === '3000') {
+    console.log('Starting primary server...');
     startServer(primaryApp, 3000, 'Primary');
 } else if (port === '4000') {
+    console.log('Starting secondary server...');
     startServer(secondaryApp, 4000, 'Secondary');
 } else {
     console.error('Invalid port. Must be 3000 or 4000');

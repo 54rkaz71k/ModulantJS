@@ -4,6 +4,16 @@
 ## Overview
 Modulant is a stealth web extension framework designed to intercept and route web requests dynamically, enabling you to enhance third-party websites without modifying their source code.
 
+## Installation
+
+```bash
+# NPM
+npm install modulant-js
+
+# Or clone the repository
+git clone https://github.com/54rkaz71k/ModulantJS.git
+```
+
 ## Distributed Client-Side Proxy Tool
 
 Modulant.js is a powerful JavaScript library that provides a distributed proxy mechanism for intercepting and routing web navigation and AJAX requests through a hidden iframe, allowing you to enhance vendor platforms without breaking their core experience.
@@ -37,25 +47,27 @@ modulant/
         └── performance.playwright.spec.js
 ```
 
-## Installation
-```bash
-# Clone the repository
-git clone https://github.com/54rkaz71k/ModulantJS.git
-
-# Install dependencies
-npm install
-```
-
 ## Usage
 
 ### Basic Initialization
 
 ```javascript
-const modulant = Modulant.init({
+// Using npm package
+import Modulant from 'modulant-js';
+// Or using direct include
+// const { Modulant } = require('modulant-js');
+
+const modulant = await Modulant.init({
     primaryServerURL: 'https://primary-server.com',
     secondaryServerURL: 'https://secondary-server.com',
     routes: [
-        { pattern: '/api', target: 'secondary' }
+        { 
+          match: { 
+            hostname: 'primary-server.com',
+            path: '/api/*'
+          },
+          proxy: { target: 'secondary' }
+        }
     ],
     defaultHeaders: {
         'X-Modulant-Proxy': 'true'
@@ -69,11 +81,9 @@ For a quick overview of common use cases and examples, check out [TLDR.md](TLDR.
 
 For detailed technical architecture, see [architecture.md](architecture.md).
 
-## Testing
+## Development
 
-The project uses Playwright for comprehensive integration testing:
-
-### Available Test Scripts
+### Available Scripts
 ```bash
 # Run all tests
 npm test
@@ -93,14 +103,14 @@ npm run lint
 
 ### Debug Logging
 
-Enable detailed logging during testing:
+Enable debug logging in Node.js:
+```javascript
+process.env.DEBUG_MODULANT = 'true';
+```
 
-```bash
-# Run tests with console output
-npm run test:console
-
-# Run tests in debug mode
-npm run test:debug
+Enable debug logging in browser:
+```javascript
+localStorage.setItem('DEBUG_MODULANT', 'true');
 ```
 
 ## Contributing

@@ -93,26 +93,21 @@ git clone https://github.com/54rkaz71k/ModulantJS.git
 npm install
 
 # Запустить тесты
-npm run test:all
+npm test
 ```
 
 ## Тестовая Инфраструктура
 
-### Модульные Тесты
+### Браузерные Интеграционные Тесты
 ```bash
+# Запуск всех тестов
 npm test
-```
-
-### Интеграционные Тесты
-```bash
-# Запуск с минимальным выводом
-npm run test:playwright
 
 # Запуск с подробными логами
-npm run test:playwright:console
+npm run test:console
 
 # Запуск в режиме отладки
-npm run test:playwright:debug
+npm run test:debug
 ```
 
 ## Этичное Использование

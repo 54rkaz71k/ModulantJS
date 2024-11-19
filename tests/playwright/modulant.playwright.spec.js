@@ -105,6 +105,72 @@ test.describe('Modulant.js Integration Tests', () => {
     });
   });
 
+  // Error Handling Tests
+  test.describe('Error Handling', () => {
+    test('should handle initialization errors', async ({ page }) => {
+      // Test initialization without required DOM
+      const error = await page.evaluate(async () => {
+        try {
+          // Remove document body to trigger initialization error
+          document.body.remove();
+          await window.Modulant.init({});
+          return null;
+        } catch (error) {
+          return {
+            name: error.name,
+            code: error.code,
+            message: error.message
+          };
+        }
+      });
+
+      expect(error).not.toBeNull();
+      expect(error.name).toBe('ModulantError');
+      expect(error.code).toBe('INIT_FAILED');
+    });
+
+    test('should handle invalid route configurations', async ({ page }) => {
+      const error = await page.evaluate(async () => {
+        try {
+          window.modulant.addRoute({
+            match: { hostname: 'example.com' } // Missing path
+          });
+          return null;
+        } catch (error) {
+          return {
+            name: error.name,
+            code: error.code,
+            message: error.message
+          };
+        }
+      });
+
+      expect(error).not.toBeNull();
+      expect(error.name).toBe('ModulantError');
+      expect(error.code).toBe('INVALID_ROUTE');
+    });
+
+    test('should handle proxy errors', async ({ page }) => {
+      const error = await page.evaluate(async () => {
+        try {
+          // Try to proxy to non-existent server
+          await window.modulant._proxyRequest('http://non-existent-server.com');
+          return null;
+        } catch (error) {
+          return {
+            name: error.name,
+            code: error.code,
+            message: error.message
+          };
+        }
+      });
+
+      expect(error).not.toBeNull();
+      expect(error.name).toBe('ModulantError');
+      expect(error.code).toBe('PROXY_ERROR');
+    });
+  });
+
   // Original Tests
   test('should intercept and route API requests to secondary server', async ({ page }) => {
     await page.click('#fetch-button');
@@ -124,7 +190,7 @@ test.describe('Modulant.js Integration Tests', () => {
   });
 
   test('should intercept and modify link clicks', async ({ page }) => {
-    const [response] = await Promise.all([
+    await Promise.all([
       page.waitForNavigation(),
       page.click('#api-link')
     ]);
@@ -169,7 +235,7 @@ test.describe('Modulant.js Integration Tests', () => {
   });
 
   test('should handle dynamic route addition', async ({ page }) => {
-    const response = await page.evaluate(async () => {
+    const result = await page.evaluate(async () => {
       window.modulant.addRoute({ match: { hostname: 'localhost', path: '/dynamic/*' }, proxy: { target: 'http://localhost:4000' } });
       try {
         const response = await fetch('http://localhost:3000/dynamic/test');
@@ -179,13 +245,13 @@ test.describe('Modulant.js Integration Tests', () => {
         return { error: e.message };
       }
     });
-    expect(response.error).toBeUndefined();
-    expect(response.url).toBe('http://localhost:4000/dynamic/test?default_param=default_value');
-    expect(response.data.message).toBe('API route response');
+    expect(result.error).toBeUndefined();
+    expect(result.url).toBe('http://localhost:4000/dynamic/test?default_param=default_value');
+    expect(result.data.message).toBe('API route response');
   });
 
   test('should maintain proxy functionality across history navigation', async ({ page }) => {
-    const response = await page.evaluate(async () => {
+    const result = await page.evaluate(async () => {
       try {
         history.pushState(null, '', '/api/test');
         const response = await fetch('/api/test');
@@ -195,9 +261,9 @@ test.describe('Modulant.js Integration Tests', () => {
         return { error: e.message };
       }
     });
-    expect(response.error).toBeUndefined();
-    expect(response.url).toBe('http://localhost:4000/api/test?default_param=default_value');
-    expect(response.data.message).toBe('API route response');
+    expect(result.error).toBeUndefined();
+    expect(result.url).toBe('http://localhost:4000/api/test?default_param=default_value');
+    expect(result.data.message).toBe('API route response');
 
     const modulantActive = await page.evaluate(() => window.modulant.isActive());
     expect(modulantActive).toBe(true);

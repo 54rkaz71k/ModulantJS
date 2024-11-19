@@ -20,6 +20,30 @@
     <a href="/api/test?_internal_param=secret&public_param=visible" id="filter-link">Parameter Filter Test</a>
     <a href="/api/test?array[]=1&array[]=2&nested[key]=value" id="complex-params-link">Complex Parameters Test</a>
     
+    <!-- Response Modification Tests -->
+    <h2>Response Modification Tests</h2>
+    <a href="/modified/test" id="modified-link">Modified Response Test</a>
+    <button id="modified-button">Test Response Modification</button>
+    
+    <!-- Error Handling Tests -->
+    <h2>Error Handling Tests</h2>
+    <a href="/error/test" id="error-link">Error Response Test</a>
+    <button id="error-button">Test Error Handling</button>
+    <button id="timeout-button">Test Timeout Handling</button>
+    
+    <!-- Performance Tests -->
+    <h2>Performance Tests</h2>
+    <button id="slow-request-button">Test Slow Request</button>
+    <div id="performance-metrics"></div>
+    
+    <!-- Debug Controls -->
+    <h2>Debug Controls</h2>
+    <label>
+        <input type="checkbox" id="debug-toggle">
+        Enable Debug Logging
+    </label>
+    <div id="debug-output"></div>
+    
     <!-- Test Buttons -->
     <h2>Request Tests</h2>
     <button id="fetch-button">Fetch API Test</button>
@@ -55,11 +79,45 @@
                     { 
                         match: { 
                             hostname: 'localhost', 
-                            path: '/api/*' 
+                            path: '/api/.*' 
                         }, 
                         proxy: { 
                             target: 'http://localhost:4000' 
                         } 
+                    },
+                    {
+                        match: {
+                            hostname: 'localhost',
+                            path: '/modified/.*'
+                        },
+                        proxy: {
+                            target: 'http://localhost:4000',
+                            modifyResponse: async (response) => {
+                                const text = await response.text();
+                                return new Response(
+                                    JSON.stringify({ modified: true, original: text }),
+                                    { headers: { 'X-Modified': 'true' } }
+                                );
+                            }
+                        }
+                    },
+                    {
+                        match: {
+                            hostname: 'localhost',
+                            path: '/error/.*'
+                        },
+                        proxy: {
+                            target: 'http://localhost:4000'
+                        }
+                    },
+                    {
+                        match: {
+                            hostname: 'localhost',
+                            path: '/timeout/.*'
+                        },
+                        proxy: {
+                            target: 'http://localhost:4000'
+                        }
                     }
                 ],
                 parameterConfig: {
@@ -94,6 +152,70 @@
         } catch (error) {
             console.error('Error initializing Modulant:', error);
         }
+
+        // Debug toggle
+        document.getElementById('debug-toggle').addEventListener('change', (event) => {
+            if (event.target.checked) {
+                localStorage.setItem('DEBUG_MODULANT', 'true');
+            } else {
+                localStorage.removeItem('DEBUG_MODULANT');
+            }
+            document.getElementById('debug-output').textContent = 
+                `Debug logging ${event.target.checked ? 'enabled' : 'disabled'}`;
+        });
+
+        // Response modification test
+        document.getElementById('modified-button').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/modified/test');
+                const data = await response.json();
+                document.getElementById('result').textContent = 
+                    `Modified response: ${JSON.stringify(data)}`;
+            } catch (error) {
+                document.getElementById('result').textContent = 
+                    `Modification error: ${error.message}`;
+            }
+        });
+
+        // Error handling tests
+        document.getElementById('error-button').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/error/test');
+                const data = await response.json();
+                document.getElementById('result').textContent = 
+                    `Error response: ${JSON.stringify(data)}`;
+            } catch (error) {
+                document.getElementById('result').textContent = 
+                    `Error handled: ${error.message}`;
+            }
+        });
+
+        document.getElementById('timeout-button').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/timeout/test');
+                const data = await response.json();
+                document.getElementById('result').textContent = 
+                    `Timeout response: ${JSON.stringify(data)}`;
+            } catch (error) {
+                document.getElementById('result').textContent = 
+                    `Timeout handled: ${error.message}`;
+            }
+        });
+
+        // Performance test
+        document.getElementById('slow-request-button').addEventListener('click', async () => {
+            const start = Date.now();
+            try {
+                const response = await fetch('/api/test?delay=1000');
+                const duration = Date.now() - start;
+                const metrics = modulant.getRequestMetrics();
+                document.getElementById('performance-metrics').textContent = 
+                    `Request duration: ${duration}ms, Metrics: ${JSON.stringify(metrics)}`;
+            } catch (error) {
+                document.getElementById('performance-metrics').textContent = 
+                    `Performance test error: ${error.message}`;
+            }
+        });
 
         // Basic fetch test
         document.getElementById('fetch-button').addEventListener('click', async () => {

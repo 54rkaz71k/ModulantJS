@@ -93,26 +93,21 @@ git clone https://github.com/54rkaz71k/ModulantJS.git
 npm install
 
 # 运行测试
-npm run test:all
+npm test
 ```
 
 ## 测试基础设施
 
-### 单元测试
+### 浏览器集成测试
 ```bash
+# 运行所有测试
 npm test
-```
-
-### 集成测试
-```bash
-# 运行（最小输出）
-npm run test:playwright
 
 # 运行（详细日志）
-npm run test:playwright:console
+npm run test:console
 
 # 运行（调试模式）
-npm run test:playwright:debug
+npm run test:debug
 ```
 
 ## 道德使用

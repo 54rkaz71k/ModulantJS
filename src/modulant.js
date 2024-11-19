@@ -1,10 +1,128 @@
 // Modulant.js - Stealth Web Extension Framework
 (function(global) {
+  // Error codes
+  const ERROR_CODES = {
+    INITIALIZATION_FAILED: 'INIT_FAILED',
+    INVALID_ROUTE: 'INVALID_ROUTE',
+    PROXY_ERROR: 'PROXY_ERROR',
+    PARAMETER_ERROR: 'PARAM_ERROR',
+    SCRIPT_ERROR: 'SCRIPT_ERROR'
+  };
+
+  // Custom error class
+  class ModulantError extends Error {
+    constructor(message, code, context = {}) {
+      super(message);
+      this.name = 'ModulantError';
+      this.code = code;
+      this.context = context;
+    }
+  }
+
+  // Store metrics in localStorage to persist across navigation
+  const storage = {
+    memoryStore: new Map(),
+    getMetrics() {
+      try {
+        // Try localStorage first
+        if (typeof localStorage !== 'undefined') {
+          const stored = localStorage.getItem('modulant_metrics');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            return new Map(parsed.map(([id, metric]) => [
+              Number(id),
+              {
+                ...metric,
+                startTime: Number(metric.startTime)
+              }
+            ]));
+          }
+        }
+        // Fallback to memory store
+        return new Map(this.memoryStore);
+      } catch (e) {
+        console.error('Failed to load metrics:', e);
+        return new Map(this.memoryStore);
+      }
+    },
+    setMetrics(metrics) {
+      try {
+        // Update memory store
+        this.memoryStore = new Map(metrics);
+        // Try localStorage if available
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('modulant_metrics', 
+            JSON.stringify(Array.from(metrics.entries()))
+          );
+        }
+      } catch (e) {
+        console.error('Failed to save metrics:', e);
+      }
+    }
+  };
+
+  // Performance monitoring
+  const performance = {
+    metrics: storage.getMetrics(),
+    nextId: 1,
+    generateId: () => {
+      // Ensure unique IDs even for concurrent requests
+      const id = Date.now() * 1000 + performance.nextId;
+      performance.nextId = (performance.nextId + 1) % 1000;
+      return id;
+    },
+    startTimer: (id) => {
+      debug.log('Starting timer for request:', id);
+      performance.metrics.set(id, {
+        startTime: Date.now(),
+        status: 'in-progress'
+      });
+      storage.setMetrics(performance.metrics);
+    },
+    endTimer: (id, status = 'completed') => {
+      debug.log('Ending timer for request:', id);
+      const metric = performance.metrics.get(id);
+      if (metric) {
+        const duration = Date.now() - metric.startTime;
+        debug.performance('Request completed:', duration);
+        // Update metric status but keep in metrics Map
+        performance.metrics.set(id, {
+          startTime: metric.startTime,
+          duration,
+          status
+        });
+        storage.setMetrics(performance.metrics);
+        return duration;
+      }
+      return null;
+    },
+    clearMetrics: (id) => {
+      if (id) {
+        debug.log('Clearing metrics for request:', id);
+        performance.metrics.delete(id);
+      } else {
+        debug.log('Clearing all metrics');
+        performance.metrics.clear();
+      }
+      storage.setMetrics(performance.metrics);
+    }
+  };
+
   // Debug logging utility
   const debug = {
     log: (...args) => {
       if (typeof process !== 'undefined' && process.env.DEBUG_MODULANT === 'true') {
         console.log('[ModulantJS Debug]', ...args);
+      }
+    },
+    error: (code, message, context) => {
+      if (typeof process !== 'undefined' && process.env.DEBUG_MODULANT === 'true') {
+        console.error(`[ModulantJS Error] ${code}:`, message, context);
+      }
+    },
+    performance: (operation, duration) => {
+      if (typeof process !== 'undefined' && process.env.DEBUG_MODULANT === 'true') {
+        console.log(`[ModulantJS Performance] ${operation}: ${duration}ms`);
       }
     }
   };
@@ -104,7 +222,7 @@
         
         return targetUrl.toString();
       } catch (error) {
-        debug.log('Error processing URL parameters:', error);
+        debug.error(ERROR_CODES.PARAMETER_ERROR, 'Error processing URL parameters:', error);
         return url;
       }
     }
@@ -125,7 +243,7 @@
           debug.log(`Transform hook applied for ${key}: ${value} -> ${transformed}`);
           return transformed;
         } catch (error) {
-          debug.log(`Error in transform hook for ${key}:`, error);
+          debug.error(ERROR_CODES.PARAMETER_ERROR, `Error in transform hook for ${key}:`, error);
           return value;
         }
       }
@@ -170,7 +288,7 @@
         debug.log(`Parameter ${key} passed all validations`);
         return true;
       } catch (error) {
-        debug.log(`Error validating parameter ${key}:`, error);
+        debug.error(ERROR_CODES.PARAMETER_ERROR, `Error validating parameter ${key}:`, error);
         return false;
       }
     }
@@ -185,35 +303,39 @@
     }
 
     _initialize() {
-      return new Promise((resolve) => {
-        // Create proxy frame
-        this._state.proxyFrame = this._createProxyFrame();
-        
-        // Store original functions
-        this._state.originalFunctions.set('fetch', window.fetch);
-        this._state.originalFunctions.set('XMLHttpRequest', window.XMLHttpRequest);
-        this._state.originalFunctions.set('open', window.open);
-        this._state.originalFunctions.set('pushState', history.pushState);
-        
-        // Initialize interceptors
-        this._interceptFetch();
-        this._interceptXHR();
-        this._interceptNavigation();
+      return new Promise((resolve, reject) => {
+        try {
+          // Create proxy frame
+          this._state.proxyFrame = this._createProxyFrame();
+          
+          // Store original functions
+          this._state.originalFunctions.set('fetch', window.fetch);
+          this._state.originalFunctions.set('XMLHttpRequest', window.XMLHttpRequest);
+          this._state.originalFunctions.set('open', window.open);
+          this._state.originalFunctions.set('pushState', history.pushState);
+          
+          // Initialize interceptors
+          this._interceptFetch();
+          this._interceptXHR();
+          this._interceptNavigation();
 
-        // Wait for frame to be ready
-        const readyHandler = (event) => {
-          if (event.data === 'modulant:ready') {
-            window.removeEventListener('message', readyHandler);
-            this._state.isActive = true;
-            resolve();
-          }
-        };
-        window.addEventListener('message', readyHandler);
+          // Wait for frame to be ready
+          const readyHandler = (event) => {
+            if (event.data === 'modulant:ready') {
+              window.removeEventListener('message', readyHandler);
+              this._state.isActive = true;
+              resolve();
+            }
+          };
+          window.addEventListener('message', readyHandler);
 
-        // Add test event handler
-        window.addEventListener('message', (event) => {
-          debug.log('[Modulant Parent] Received message:', event.data);
-        });
+          // Add test event handler
+          window.addEventListener('message', (event) => {
+            debug.log('[Modulant Parent] Received message:', event.data);
+          });
+        } catch (error) {
+          reject(new ModulantError('Initialization failed', ERROR_CODES.INITIALIZATION_FAILED, error));
+        }
       });
     }
 
@@ -322,7 +444,8 @@
           
           return hostMatch && pathMatch;
         });
-      } catch {
+      } catch (error) {
+        debug.error(ERROR_CODES.INVALID_ROUTE, 'Error finding matching route:', error);
         return null;
       }
     }
@@ -330,39 +453,83 @@
     async _proxyRequest(url, init = {}) {
       const route = this._findMatchingRoute(url);
       if (!route || !route.proxy || !route.proxy.target) {
-        return this._state.originalFunctions.get('fetch')(url, init);
+        try {
+          return await this._state.originalFunctions.get('fetch')(url, init);
+        } catch (error) {
+          throw new ModulantError(error.message, ERROR_CODES.PROXY_ERROR, { url, error });
+        }
       }
 
       return new Promise((resolve, reject) => {
-        const id = Date.now();
+        const id = performance.generateId();
+        performance.startTimer(id);
+
         const cleanup = setTimeout(() => {
           window.removeEventListener('message', handler);
-          reject(new Error('Request timeout'));
+          // Keep as in-progress for timeout
+          debug.performance('Request timeout');
+          performance.endTimer(id, 'in-progress');
+          reject(new ModulantError('Request timeout', ERROR_CODES.PROXY_ERROR, { url }));
         }, 30000);
 
-        const handler = (event) => {
+        const handler = async (event) => {
           if (!event.data || event.data.id !== id) return;
           window.removeEventListener('message', handler);
           clearTimeout(cleanup);
 
           if (event.data.error) {
-            reject(new Error(event.data.error));
+            // Keep as in-progress for error
+            debug.performance('Failed request');
+            performance.endTimer(id, 'in-progress');
+            reject(new ModulantError(event.data.error, ERROR_CODES.PROXY_ERROR, { url }));
             return;
           }
 
-          const response = new Response(event.data.body, {
-            status: event.data.status,
-            headers: event.data.headers
-          });
+          try {
+            let response = new Response(event.data.body, {
+              status: event.data.status,
+              headers: event.data.headers
+            });
 
-          // Process URL parameters for the proxy URL
-          const proxyUrl = this._processURLParameters(url, route);
-          Object.defineProperties(response, {
-            url: { value: proxyUrl },
-            text: { value: async () => event.data.body }
-          });
+            // Handle error status codes
+            if (response.status >= 400) {
+              // Keep as in-progress for error responses
+              debug.performance('Error response');
+              performance.endTimer(id, 'in-progress');
+              reject(new ModulantError(
+                `HTTP error ${response.status}`,
+                ERROR_CODES.PROXY_ERROR,
+                { url, status: response.status }
+              ));
+              return;
+            }
 
-          resolve(response);
+            // Apply response modifications if configured
+            if (route.proxy.modifyResponse) {
+              debug.log('Applying response modifications');
+              response = await route.proxy.modifyResponse(response);
+            }
+
+            // Process URL parameters for the proxy URL
+            const proxyUrl = this._processURLParameters(url, route);
+            Object.defineProperties(response, {
+              url: { value: proxyUrl },
+              text: { value: async () => event.data.body }
+            });
+
+            const duration = performance.endTimer(id, 'completed');
+            debug.performance('Successful request', duration);
+            resolve(response);
+          } catch (error) {
+            // Keep as in-progress for error
+            debug.performance('Response processing error');
+            performance.endTimer(id, 'in-progress');
+            reject(new ModulantError(
+              'Error processing response',
+              ERROR_CODES.PROXY_ERROR,
+              { url, error: error.message }
+            ));
+          }
         };
 
         window.addEventListener('message', handler);
@@ -469,23 +636,41 @@
     }
 
     addRoute(route) {
-      // Handle both object and pattern/target formats
-      if (typeof route === 'string') {
-        const pattern = route;
-        const target = arguments[1];
-        route = {
-          match: {
-            hostname: window.location.hostname,
-            path: pattern
-          },
-          proxy: {
-            target: target === 'secondary' ? this.config.secondaryServerURL : target
-          }
-        };
+      try {
+        // Handle both object and pattern/target formats
+        if (typeof route === 'string') {
+          const pattern = route;
+          const target = arguments[1];
+          route = {
+            match: {
+              hostname: window.location.hostname,
+              path: pattern
+            },
+            proxy: {
+              target: target === 'secondary' ? this.config.secondaryServerURL : target
+            }
+          };
+        }
+
+        // Validate route configuration
+        if (!route.match?.hostname || !route.match?.path || !route.proxy?.target) {
+          throw new ModulantError(
+            'Invalid route configuration',
+            ERROR_CODES.INVALID_ROUTE,
+            { route }
+          );
+        }
+        
+        this.config.routes.push(route);
+        return route;
+      } catch (error) {
+        if (error instanceof ModulantError) throw error;
+        throw new ModulantError(
+          'Error adding route',
+          ERROR_CODES.INVALID_ROUTE,
+          { route, error: error.message }
+        );
       }
-      
-      this.config.routes.push(route);
-      return route;
     }
 
     isActive() {
@@ -493,17 +678,48 @@
     }
 
     static async init(config) {
-      const instance = new Modulant(config);
-      await instance._initPromise;
-      return instance;
+      try {
+        const instance = new Modulant(config);
+        await instance._initPromise;
+        return instance;
+      } catch (error) {
+        throw new ModulantError(
+          'Initialization failed',
+          ERROR_CODES.INITIALIZATION_FAILED,
+          { error: error.message }
+        );
+      }
+    }
+
+    // Performance monitoring methods
+    getRequestMetrics() {
+      // Load latest metrics from storage
+      performance.metrics = storage.getMetrics();
+      
+      const metrics = Array.from(performance.metrics.entries()).map(([id, metric]) => {
+        const duration = metric.duration || (
+          metric.status === 'in-progress' ? Date.now() - metric.startTime : undefined
+        );
+        return {
+          id,
+          duration,
+          status: metric.status
+        };
+      });
+      debug.log('Current metrics:', metrics);
+      return metrics;
     }
   }
 
-  // Expose Modulant
+  // Expose Modulant and its error types
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = Modulant;
+    module.exports.ModulantError = ModulantError;
+    module.exports.ERROR_CODES = ERROR_CODES;
   }
   if (typeof window !== 'undefined') {
     window.Modulant = Modulant;
+    window.Modulant.ModulantError = ModulantError;
+    window.Modulant.ERROR_CODES = ERROR_CODES;
   }
 })(typeof window !== 'undefined' ? window : global);

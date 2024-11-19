@@ -2,11 +2,11 @@
 <p align="center"><img height="320px" src="https://repository-images.githubusercontent.com/889695914/18d32efa-91ef-4481-943e-5f1c709068bf"></img></p>
 
 ## Overview
-Modulant is a distributed client-side proxy tool designed to intercept and route web requests dynamically.
+Modulant is a stealth web extension framework designed to intercept and route web requests dynamically, enabling you to enhance third-party websites without modifying their source code.
 
 ## Distributed Client-Side Proxy Tool
 
-Modulant.js is a powerful JavaScript library that provides a distributed proxy mechanism for intercepting and routing web navigation and AJAX requests through a hidden iframe.
+Modulant.js is a powerful JavaScript library that provides a distributed proxy mechanism for intercepting and routing web navigation and AJAX requests through a hidden iframe, allowing you to enhance vendor platforms without breaking their core experience.
 
 ### Features
 
@@ -28,17 +28,13 @@ modulant/
 │   ├── global-teardown.js     # Test cleanup configuration
 │   └── playwright.config.js   # Playwright test configuration
 │
-├── tests/
-│   ├── modulant.spec.js       # Unit tests
-│   ├── playwright/
-│   │   └── modulant.playwright.spec.js  # Integration tests
-│   └── mocks/
-│       ├── test-server.js     # Mock server for testing
-│       └── test-page.html     # Test page for integration tests
-│
-└── example_routing/
-    ├── checkout-routing.js    # Example checkout flow routing
-    └── modulant-routing.js    # Example general routing
+└── tests/
+    ├── mocks/                 # Mock servers and test pages
+    │   ├── test-server.js     # Test server implementation
+    │   └── test-page.html     # Test page for integration tests
+    └── playwright/            # Integration tests
+        ├── modulant.playwright.spec.js
+        └── performance.playwright.spec.js
 ```
 
 ## Installation
@@ -67,95 +63,45 @@ const modulant = Modulant.init({
 });
 ```
 
-### Configuration Options
+For detailed API documentation and advanced usage, please refer to [API.md](API.md).
 
-- `primaryServerURL`: Default server for most requests
-- `secondaryServerURL`: Alternate server for specific routes
-- `routes`: Array of routing rules to determine request destinations
-- `defaultHeaders`: Headers to be added to all requests
-- `injectScript`: Custom script to inject into dynamically loaded content
+For a quick overview of common use cases and examples, check out [TLDR.md](TLDR.md).
+
+For detailed technical architecture, see [architecture.md](architecture.md).
 
 ## Testing
 
-The project uses a comprehensive testing approach with both unit tests and integration tests:
+The project uses Playwright for comprehensive integration testing:
 
 ### Available Test Scripts
-- `npm test`: Run unit tests
-- `npm run test:playwright`: Run integration tests (minimal output)
-- `npm run test:playwright:console`: Run integration tests with detailed logs
-- `npm run test:playwright:debug`: Run integration tests in debug mode
-- `npm run test:all`: Run all tests (unit and integration)
+```bash
+# Run all tests
+npm test
+
+# Run tests with debug mode
+npm run test:debug
+
+# Run tests with console output
+npm run test:console
+
+# Start development server
+npm run dev
+
+# Run linting
+npm run lint
+```
 
 ### Debug Logging
 
-The project uses the `debug` module for detailed logging during testing:
-
-- Server logs: Enable with `DEBUG=modulant:server`
-- Test logs: Enable with `DEBUG=modulant:test`
-- All logs: Enable with `DEBUG=modulant:*`
-
-Example:
-```bash
-# Run tests with all debug logs
-DEBUG=modulant:* npm run test:playwright
-
-# Run tests with only server logs
-DEBUG=modulant:server npm run test:playwright
-```
-
-### Query Parameter Handling
-
-The test server supports various URL parameter formats:
-
-- Array parameters: `?array[]=1&array[]=2` becomes `{ array: ['1', '2'] }`
-- Nested parameters: `?nested[key]=value` becomes `{ nested: { key: 'value' } }`
-- Single values in array parameters are automatically converted to arrays for consistent handling
-
-### Test Infrastructure
-
-#### Unit Tests
-- Located in `tests/modulant.spec.js`
-- Uses Mocha and Chai for assertions
-- Tests core functionality in isolation
-
-#### Integration Tests
-- Located in `tests/playwright/`
-- Uses Playwright for browser automation
-- Tests end-to-end functionality
-- Includes custom script injection tests
-- Verifies routing and interception
-
-### Running Tests
+Enable detailed logging during testing:
 
 ```bash
-# Run all tests
-npm run test:all
+# Run tests with console output
+npm run test:console
 
-# Run unit tests only
-npm test
-
-# Run integration tests
-npm run test:playwright
-
-# Run integration tests with detailed logs
-npm run test:playwright:console
-
-# Run integration tests in debug mode
-npm run test:playwright:debug
+# Run tests in debug mode
+npm run test:debug
 ```
-
-## How It Works
-
-1. Creates a hidden iframe for proxying requests
-2. Intercepts all link clicks and AJAX requests
-3. Routes requests through the iframe based on configuration
-4. Dynamically injects content and maintains request interception
-
-## Security
-
-- Uses `sandbox` attributes to restrict iframe capabilities
-- Validates `postMessage` origins
-- Provides flexible routing and header configuration
 
 ## Contributing
 
@@ -167,7 +113,7 @@ npm run test:playwright:debug
 
 ## License
 
-Distributed under the MIT License.
+Fuck your Licence (Im Rick James, bitch...)
 
 ## Contact
 

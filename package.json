@@ -1,6 +1,6 @@
 {
   "name": "modulant-js",
-  "version": "0.0.1-beta",
+  "version": "0.1.1",
   "description": "Stealth web extension framework for intercepting and routing web requests",
   "main": "src/modulant.js",
   "type": "commonjs",
@@ -75,20 +75,44 @@
       "sourceType": "script"
     },
     "rules": {
-      "no-console": ["warn", { "allow": ["warn", "error"] }],
-      "indent": ["error", 2],
-      "semi": ["error", "always"],
-      "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+      "no-console": [
+        "warn",
+        {
+          "allow": [
+            "warn",
+            "error"
+          ]
+        }
+      ],
+      "indent": [
+        "error",
+        2
+      ],
+      "semi": [
+        "error",
+        "always"
+      ],
+      "no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_"
+        }
+      ]
     },
     "overrides": [
       {
-        "files": ["tests/**/*", "config/**/*"],
+        "files": [
+          "tests/**/*",
+          "config/**/*"
+        ],
         "rules": {
           "no-console": "off"
         }
       },
       {
-        "files": ["src/modulant.js"],
+        "files": [
+          "src/modulant.js"
+        ],
         "rules": {
           "no-console": "off"
         }

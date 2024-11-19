@@ -1,5 +1,5 @@
 # Modulant JS
-<p align="center"><img height="320px" src="https://repository-images.githubusercontent.com/889695914/18d32efa-91ef-4481-943e-5f1c709068bf"></img></p>
+<p align="center"><img width="60%" src="https://repository-images.githubusercontent.com/889695914/18d32efa-91ef-4481-943e-5f1c709068bf"></img></p>
 
 ## Overview
 Modulant is a stealth web extension framework designed to intercept and route web requests dynamically, enabling you to enhance third-party websites without modifying their source code.

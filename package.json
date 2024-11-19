@@ -5,12 +5,9 @@
   "main": "src/modulant.js",
   "type": "commonjs",
   "scripts": {
-    "test": "mocha tests/modulant.spec.js",
-    "test:all": "npm run test && npm run test:playwright",
-
-    "test:playwright": "playwright test --config=config/playwright.config.js",
-    "test:playwright:debug": "PWDEBUG=1 playwright test --config=config/playwright.config.js --headed --timeout 0",
-    "test:playwright:console": "playwright test --config=config/playwright.config.js",
+    "test": "playwright test --config=config/playwright.config.js",
+    "test:debug": "PWDEBUG=1 playwright test --config=config/playwright.config.js --headed --timeout 0",
+    "test:console": "DEBUG=modulant:* playwright test --config=config/playwright.config.js",
     "dev": "npx http-server .",
     "lint": "eslint .",
     "prepare": "npm run lint && npm test"
@@ -19,16 +16,20 @@
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.32.3",
     "chai": "^4.3.7",
+    "chai-as-promised": "^8.0.0",
+    "debug": "^4.3.7",
     "eslint": "^8.36.0",
     "http-server": "^14.1.1",
     "jsdom": "^21.1.1",
     "jsdom-global": "^3.0.2",
     "mocha": "^10.2.0",
+    "qs": "^6.13.1",
     "sinon": "^15.0.3"
   },
   "keywords": [
@@ -39,12 +40,6 @@
   ],
   "author": "steake",
   "license": "MIT",
-  "mocha": {
-    "require": [
-      "jsdom-global/register"
-    ],
-    "spec": "tests/modulant.spec.js"
-  },
   "eslintConfig": {
     "env": {
       "browser": true,

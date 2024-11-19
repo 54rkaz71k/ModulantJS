@@ -23,13 +23,26 @@ function findAvailablePort(startPort = 3000) {
   });
 }
 
-async function createLocalServer() {
+async function createLocalServer(app) {
   const port = await findAvailablePort();
-  const app = express();
   
+  // Use provided app or create new one
+  app = app || express();
+  
+  // Add CORS middleware
   app.use(cors());
   
   // Mock endpoints to demonstrate routing
+  app.get('/api/test', (req, res) => {
+    // Add small delay to ensure concurrent requests
+    setTimeout(() => {
+      res.json({
+        source: 'local-server',
+        message: 'Test response'
+      });
+    }, 50);
+  });
+
   app.get('/api/products', (req, res) => {
     res.json({
       source: 'local-server',
@@ -40,11 +53,37 @@ async function createLocalServer() {
     });
   });
 
+  // Add delay endpoint for testing timeouts
+  app.get('/timeout/test', (req, res) => {
+    // Never send response to simulate timeout
+  });
+
+  // Add error endpoint
+  app.get('/error/test', (req, res) => {
+    res.status(500).json({ error: 'Test error' });
+  });
+
+  // Add modified endpoint
+  app.get('/modified/test', (req, res) => {
+    // Add delay to ensure concurrent requests
+    setTimeout(() => {
+      res.json({ message: 'Modified response' });
+    }, 100);
+  });
+
+  // Add dynamic endpoint
+  app.get('/dynamic/test', (req, res) => {
+    // Add longer delay to ensure concurrent requests
+    setTimeout(() => {
+      res.json({ message: 'Dynamic response' });
+    }, 150);
+  });
+
   const server = app.listen(port, () => {
     console.log(`Local mock server running on http://localhost:${port}`);
   });
 
-  return { server, port };
+  return { server, port, app };
 }
 
 module.exports = { createLocalServer };

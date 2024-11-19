@@ -93,26 +93,21 @@ git clone https://github.com/54rkaz71k/ModulantJS.git
 npm install
 
 # Run tests
-npm run test:all
+npm test
 ```
 
 ## Testing Infrastructure
 
-### Unit Tests
+### Browser Integration Tests
 ```bash
+# Run all tests
 npm test
-```
-
-### Integration Tests
-```bash
-# Run with minimal output
-npm run test:playwright
 
 # Run with detailed logs
-npm run test:playwright:console
+npm run test:console
 
 # Run in debug mode
-npm run test:playwright:debug
+npm run test:debug
 ```
 
 ## Ethical Usage

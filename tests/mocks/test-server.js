@@ -126,7 +126,7 @@ secondaryApp.get('/error/test', (req, res) => {
   });
 });
 
-secondaryApp.get('/timeout/test', (req, res) => {
+secondaryApp.get('/timeout/test', (_req, _res) => {
   debug('Secondary server: Simulating timeout for /timeout/test');
   // Don't send response - let it timeout
 });

@@ -1,5 +1,5 @@
 // Modulant.js - Stealth Web Extension Framework
-(function(global) {
+(() => {
   // Error codes
   const ERROR_CODES = {
     INITIALIZATION_FAILED: 'INIT_FAILED',
@@ -41,7 +41,7 @@
         // Fallback to memory store
         return new Map(this.memoryStore);
       } catch (e) {
-        console.error('Failed to load metrics:', e);
+        debug.error(ERROR_CODES.PARAMETER_ERROR, 'Failed to load metrics:', e);
         return new Map(this.memoryStore);
       }
     },
@@ -56,7 +56,7 @@
           );
         }
       } catch (e) {
-        console.error('Failed to save metrics:', e);
+        debug.error(ERROR_CODES.PARAMETER_ERROR, 'Failed to save metrics:', e);
       }
     }
   };
@@ -112,17 +112,20 @@
   const debug = {
     log: (...args) => {
       if (typeof process !== 'undefined' && process.env.DEBUG_MODULANT === 'true') {
-        console.log('[ModulantJS Debug]', ...args);
+        const log = Function.prototype.bind.call(console.log, console);
+        log('[ModulantJS Debug]', ...args);
       }
     },
     error: (code, message, context) => {
       if (typeof process !== 'undefined' && process.env.DEBUG_MODULANT === 'true') {
-        console.error(`[ModulantJS Error] ${code}:`, message, context);
+        const error = Function.prototype.bind.call(console.error, console);
+        error(`[ModulantJS Error] ${code}:`, message, context);
       }
     },
     performance: (operation, duration) => {
       if (typeof process !== 'undefined' && process.env.DEBUG_MODULANT === 'true') {
-        console.log(`[ModulantJS Performance] ${operation}: ${duration}ms`);
+        const log = Function.prototype.bind.call(console.log, console);
+        log(`[ModulantJS Performance] ${operation}: ${duration}ms`);
       }
     }
   };
@@ -722,4 +725,4 @@
     window.Modulant.ModulantError = ModulantError;
     window.Modulant.ERROR_CODES = ERROR_CODES;
   }
-})(typeof window !== 'undefined' ? window : global);
+})();

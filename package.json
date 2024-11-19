@@ -1,45 +1,67 @@
 {
   "name": "modulant-js",
   "version": "1.0.0",
-  "description": "Distributed client-side proxy tool",
+  "description": "Stealth web extension framework for intercepting and routing web requests",
   "main": "src/modulant.js",
   "type": "commonjs",
+  "files": [
+    "src/",
+    "README.md",
+    "API.md",
+    "TLDR.md"
+  ],
   "scripts": {
     "test": "playwright test --config=config/playwright.config.js",
     "test:debug": "PWDEBUG=1 playwright test --config=config/playwright.config.js --headed --timeout 0",
     "test:console": "DEBUG=modulant:* playwright test --config=config/playwright.config.js",
     "dev": "npx http-server .",
     "lint": "eslint .",
-    "prepare": "npm run lint && npm test"
+    "prepare": "npm run lint && npm test",
+    "prepublishOnly": "npm test && npm run lint",
+    "version": "git add -A src",
+    "postversion": "git push && git push --tags"
   },
   "dependencies": {
-    "axios": "^0.21.1",
-    "body-parser": "^1.19.0",
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
-    "node-fetch": "^2.7.0"
+    "debug": "^4.3.7"
   },
   "devDependencies": {
     "@playwright/test": "^1.32.3",
+    "axios": "^0.21.1",
+    "body-parser": "^1.19.0",
     "chai": "^4.3.7",
     "chai-as-promised": "^8.0.0",
-    "debug": "^4.3.7",
+    "cors": "^2.8.5",
     "eslint": "^8.36.0",
+    "express": "^4.17.1",
     "http-server": "^14.1.1",
     "jsdom": "^21.1.1",
     "jsdom-global": "^3.0.2",
     "mocha": "^10.2.0",
+    "node-fetch": "^2.7.0",
     "qs": "^6.13.1",
     "sinon": "^15.0.3"
   },
   "keywords": [
+    "web-extension",
     "proxy",
-    "javascript",
-    "web",
-    "interceptor"
+    "request-interceptor",
+    "cors-bypass",
+    "web-manipulation",
+    "stealth",
+    "iframe-proxy",
+    "request-routing",
+    "web-enhancement"
   ],
   "author": "steake",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/54rkaz71k/ModulantJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/54rkaz71k/ModulantJS/issues"
+  },
+  "homepage": "https://github.com/54rkaz71k/ModulantJS#readme",
   "eslintConfig": {
     "env": {
       "browser": true,
@@ -53,15 +75,24 @@
       "sourceType": "script"
     },
     "rules": {
-      "no-console": "warn",
-      "indent": [
-        "error",
-        2
-      ],
-      "semi": [
-        "error",
-        "always"
-      ]
-    }
+      "no-console": ["warn", { "allow": ["warn", "error"] }],
+      "indent": ["error", 2],
+      "semi": ["error", "always"],
+      "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+    },
+    "overrides": [
+      {
+        "files": ["tests/**/*", "config/**/*"],
+        "rules": {
+          "no-console": "off"
+        }
+      },
+      {
+        "files": ["src/modulant.js"],
+        "rules": {
+          "no-console": "off"
+        }
+      }
+    ]
   }
 }
